@@ -37,19 +37,21 @@ Changelog = "https://github.com/Toilal/fastapi-router-variants/blob/develop/CHAN
 Issues = "https://github.com/Toilal/fastapi-router-variants/issues"
 
 [dependency-groups]
+lint = [
+    "ruff",
+    "mypy",
+]
 test = [
     "pytest",
     "pytest-asyncio",
     "pytest-cov",
     "httpx",
-]
-lint = [
-    "ruff",
-    "mypy",
+    # The README examples are type-checked and linted as a test (test_readme.py),
+    # so ruff + mypy must be present in the test environment too.
+    { include-group = "lint" },
 ]
 dev = [
     { include-group = "test" },
-    { include-group = "lint" },
     # Tooling driven by .pre-commit-config.yaml: the hooks run via `uv run`, so
     # these must be in the dev env / uv.lock.
     "pre-commit",

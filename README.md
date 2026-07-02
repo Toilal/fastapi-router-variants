@@ -22,11 +22,12 @@ uv add fastapi-router-variants
 
 ```python
 from fastapi import FastAPI
-from fastapi_router_variants import RouterWrapper, RouterDefaults
+
+from fastapi_router_variants import RouterDefaults, RouterWrapper
 
 
 class ApiDefaults(RouterDefaults):
-    prefix = "/api"
+    prefix = "/api"           # mount every route under /api
     version = True            # force versioning on every route
     version_range = (1, 3)    # generate v1, v2, v3
     version_default = 3       # the version served on unversioned doc URLs
@@ -38,7 +39,7 @@ router = RouterWrapper()
 
 
 @router.get("/users/{user_id}")
-def get_user(user_id: int) -> dict:
+def get_user(user_id: int) -> dict[str, int]:
     return {"id": user_id}
 
 
@@ -60,18 +61,30 @@ A route can be declared with several paths, or with per-variant overrides via
 `Route`:
 
 ```python
-from fastapi_router_variants import Route
+from fastapi_router_variants import Route, RouterDefaults, RouterWrapper
+
+
+class ApiDefaults(RouterDefaults):
+    prefix = "/api"
+    version = True
+    version_range = (1, 3)
+
+
+RouterWrapper.defaults = ApiDefaults()
+
+router = RouterWrapper()
 
 
 @router.get(
     [
-        "/groups/{group_id}/vehicle_list",           # legacy path
-        "/groups/{group_id}/vehicles",               # new path
+        "/groups/{group_id}/vehicle_list",  # legacy path
+        "/groups/{group_id}/vehicles",  # new path
         Route("/legacy", version=(1, 1), deprecated=False),
     ],
     version=(2, 3),
 )
-def list_vehicles(group_id: int) -> list: ...
+def list_vehicles(group_id: int) -> list[dict[str, int]]:
+    return [{"group_id": group_id}]
 ```
 
 Each entry is expanded across the configured version range; a `Route` may pin its
@@ -95,10 +108,20 @@ Routing specs are small composable predicates over a route, used to classify
 routes (e.g. which are public):
 
 ```python
-from fastapi_router_variants import And, Or, Not, Public, ApiVersion, Paths, Methods
+from fastapi_router_variants import (
+    And,
+    ApiVersion,
+    Methods,
+    Not,
+    Or,
+    Paths,
+    Public,
+    RoutingSpec,
+)
 
-public = Not(Paths("/internal", startswith=True))
-v2_public = And(ApiVersion(2), Public())
+public: RoutingSpec = Not(Paths("/internal", startswith=True))
+v2_public: RoutingSpec = And(ApiVersion(2), Public())
+read_only: RoutingSpec = Or(Methods("GET"), Methods("HEAD"))
 ```
 
 `resolve(...)` evaluates a spec against a route; `resolve_routes(routes, spec)`
@@ -111,10 +134,38 @@ category** (by default `internal` and `public`) and mounts Swagger UI, ReDoc and
 `openapi.json` for each, with redirects for the default version:
 
 ```python
-from fastapi_router_variants import add_doc_routes_for_app
+from fastapi import FastAPI
 
-app = FastAPI()
-app.router_wrapper_class = RouterWrapper   # expose the defaults
+from fastapi_router_variants import (
+    RouterDefaults,
+    RouterWrapper,
+    add_doc_routes_for_app,
+)
+
+
+class ApiDefaults(RouterDefaults):
+    prefix = "/api"
+    version = True
+    version_range = (1, 3)
+    version_default = 3
+
+
+RouterWrapper.defaults = ApiDefaults()
+
+router = RouterWrapper()
+
+
+@router.get("/users/{user_id}")
+def get_user(user_id: int) -> dict[str, int]:
+    return {"id": user_id}
+
+
+class DocumentedApp(FastAPI):
+    router_wrapper_class: type[RouterWrapper]
+
+
+app = DocumentedApp()
+app.router_wrapper_class = RouterWrapper  # expose the defaults
 app.include_router(router.base)
 
 add_doc_routes_for_app(app)
@@ -136,13 +187,34 @@ default to jsDelivr.
 ### Custom categories
 
 ```python
-from fastapi_router_variants import OpenapiCategory, And, OpenapiExtra
+from fastapi import FastAPI
+
+from fastapi_router_variants import (
+    And,
+    OpenapiCategory,
+    OpenapiExtra,
+    RouterWrapper,
+    RoutingSpec,
+    add_doc_routes_for_app,
+)
+
+
+class DocumentedApp(FastAPI):
+    router_wrapper_class: type[RouterWrapper]
+
+
+def partner_spec(version_spec: RoutingSpec) -> RoutingSpec:
+    return And(version_spec, OpenapiExtra("x-partner", True))
+
 
 partner = OpenapiCategory(
     name="partner",
     title="Partner API",
-    spec_factory=lambda version_spec: And(version_spec, OpenapiExtra("x-partner", True)),
+    spec_factory=partner_spec,
 )
+
+app = DocumentedApp()
+app.router_wrapper_class = RouterWrapper
 
 add_doc_routes_for_app(app, categories=(partner,))
 ```
@@ -154,11 +226,33 @@ injectable — no dependency on any error base class is assumed. Enable it on th
 defaults and provide the hooks:
 
 ```python
+from collections.abc import Callable
+from typing import Any
+
+from fastapi_router_variants import RouterDefaults, RouterWrapper
+
+
+class MyHttpError(Exception):
+    pass
+
+
+def my_scanner(handler: Callable[..., Any]) -> set[type]:
+    return set()
+
+
+def my_schema_builder(errors: set[type]) -> dict[int | str, dict[str, Any]]:
+    descriptions = ", ".join(sorted(error.__name__ for error in errors))
+    return {400: {"description": descriptions}}
+
+
 class ApiDefaults(RouterDefaults):
     autodoc_http_errors = True
     http_error_base = MyHttpError
-    exception_scanner = staticmethod(my_scanner)          # Callable -> set[type]
-    error_schema_builder = staticmethod(my_schema_builder) # set[type] -> responses dict
+    exception_scanner = staticmethod(my_scanner)
+    error_schema_builder = staticmethod(my_schema_builder)
+
+
+RouterWrapper.defaults = ApiDefaults()
 ```
 
 When left unset, the whole error-collection path is short-circuited.

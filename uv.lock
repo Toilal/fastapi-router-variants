@@ -407,9 +407,11 @@ lint = [
 ]
 test = [
     { name = "httpx" },
+    { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
+    { name = "ruff" },
 ]
 
 [package.metadata]
@@ -440,9 +442,11 @@ lint = [
 ]
 test = [
     { name = "httpx" },
+    { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
+    { name = "ruff" },
 ]
 
 [[package]]
