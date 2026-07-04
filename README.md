@@ -10,6 +10,13 @@ multiple version prefixes (`/v1/...`, `/v2/...`), multiple mount prefixes, with
 deprecation handled automatically. It then builds a **separate OpenAPI schema per
 version** and mounts Swagger UI / ReDoc / `openapi.json` for each of them.
 
+## Documentation
+
+Full documentation is published at
+<https://toilal.github.io/fastapi-router-variants>. A preview of the in-progress
+`develop` branch is available at
+<https://toilal.github.io/fastapi-router-variants/dev/>.
+
 ## Install
 
 ```bash
