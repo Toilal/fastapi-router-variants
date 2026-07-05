@@ -39,6 +39,22 @@ class TestCsvExport:
         assert "**name**" in route.description
         assert "—" in route.description  # empty cell placeholder
 
+    def test_csv_export_unequal_columns_does_not_crash(self) -> None:
+        router = RouterWrapper()
+
+        @router.get_csv_export(
+            "/export",
+            csv_example=[("name", ("alice", "bob", "carol")), ("age", ("30",))],
+        )
+        def export() -> None: ...
+
+        route = next(r for r in router.base.routes if isinstance(r, APIRoute))
+        example = route.responses[200]["content"]["text/csv"]["example"]
+        assert example.splitlines() == ["name;age", "alice;30"]
+        assert route.description is not None
+        assert "alice" in route.description
+        assert "bob" not in route.description
+
 
 class TestExplicitPathVariants:
     @pytest.fixture(autouse=True)

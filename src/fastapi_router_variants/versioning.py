@@ -154,10 +154,6 @@ class RouteFlavors:
         return [self.root, *self.flavors]
 
 
-class RoutePathGroup:
-    path: str
-
-
 PathSpecItem = str | Route
 
 PathSpec = PathSpecItem | Sequence[PathSpecItem] | RouteFlavors
@@ -225,12 +221,9 @@ def version_range_from_spec(
 
 
 def _prepend_prefix(existing: str, new_prefix: str) -> str:
-    return (
-        ("/" if existing.startswith("/") else "")
-        + new_prefix.strip("/")
-        + "/"
-        + existing.lstrip("/")
-    )
+    prefix = "/" + new_prefix.strip("/")
+    tail = existing.strip("/")
+    return f"{prefix}/{tail}" if tail else prefix
 
 
 def versioned_routes(

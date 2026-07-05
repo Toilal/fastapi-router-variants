@@ -13,7 +13,7 @@ class RoutingSpec:
         *,
         path: str | None = None,
         methods: list[str] | None = None,
-        deprecated: bool | None = False,
+        deprecated: bool | None = None,
         response_model: Any = None,
         response_class: type[Response] | None = None,
         openapi_extra: dict[str, Any] | None = None,

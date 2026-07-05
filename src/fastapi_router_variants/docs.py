@@ -114,8 +114,14 @@ def add_doc_routes_for_all_versions(
         )
 
         min_version, max_version = version_range
+        present_versions = openapi_provider.get_versions()
+        versions = (
+            sorted(present_versions)
+            if present_versions is not None
+            else range(min_version, max_version + 1)
+        )
 
-        for version in range(min_version, max_version + 1):
+        for version in versions:
             version_specs = add_doc_routes_for_version(
                 app,
                 openapi_provider,
