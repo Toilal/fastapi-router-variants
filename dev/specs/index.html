@@ -427,6 +427,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#composing-across-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Composing across levels
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#filtering-routes" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -599,6 +610,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#composing-across-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Composing across levels
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#filtering-routes" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -716,12 +738,34 @@ precedence, against the keyword route metadata:</p>
 </span></code></pre></div>
 <p><code>resolve</code> returns a concrete <code>bool</code>; if the resolved spec yields <code>None</code> (unset)
 and no <code>Yes()</code>/<code>No()</code> default is supplied, it raises <code>UnsetResultError</code>.</p>
+<h2 id="composing-across-levels">Composing across levels<a class="headerlink" href="#composing-across-levels" title="Permanent link">&para;</a></h2>
+<p>By default the most specific non-unset spec wins (route over router over
+default). The <em>reference</em> specs let a spec at one level splice in another
+level's spec instead of shadowing it, and the <em>without</em> specs opt a level out:</p>
+<ul>
+<li><code>DefaultsReference()</code> — placeholder replaced by the <code>default_spec</code>.</li>
+<li><code>RouterReference()</code> — placeholder replaced by the <code>router_spec</code>.</li>
+<li><code>RouteReference()</code> — placeholder replaced by the <code>route_spec</code>.</li>
+<li><code>ChildReference()</code> — placeholder replaced by the next level down (the router
+  spec when resolving a default, the route spec when resolving a router).</li>
+<li><code>WithoutDefaults()</code> / <code>WithoutRouter()</code> — mark a spec so resolution does not
+  fall back to the default / router level.</li>
+</ul>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi_router_variants</span><span class="w"> </span><span class="kn">import</span> <span class="n">DefaultsReference</span><span class="p">,</span> <span class="n">Methods</span><span class="p">,</span> <span class="n">Or</span><span class="p">,</span> <span class="n">resolve</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># A router that adds POST on top of whatever the defaults already allow.</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">allowed</span> <span class="o">=</span> <span class="n">resolve</span><span class="p">(</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">router_spec</span><span class="o">=</span><span class="n">Or</span><span class="p">(</span><span class="n">Methods</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">),</span> <span class="n">DefaultsReference</span><span class="p">()),</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">default_spec</span><span class="o">=</span><span class="n">Methods</span><span class="p">(</span><span class="s2">&quot;GET&quot;</span><span class="p">),</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">],</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="p">)</span>  <span class="c1"># True — matched through the referenced default</span>
+</span></code></pre></div>
 <h2 id="filtering-routes">Filtering routes<a class="headerlink" href="#filtering-routes" title="Permanent link">&para;</a></h2>
 <p><code>resolve_routes(routes, spec)</code> lazily yields the routes of an iterable that match
 a spec — handy for selecting a subset of an app's routes:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi_router_variants</span><span class="w"> </span><span class="kn">import</span> <span class="n">Public</span><span class="p">,</span> <span class="n">collect_app_routes</span><span class="p">,</span> <span class="n">resolve_routes</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">public_routes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">resolve_routes</span><span class="p">(</span><span class="n">collect_app_routes</span><span class="p">(</span><span class="n">app</span><span class="p">),</span> <span class="n">Public</span><span class="p">()))</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi_router_variants</span><span class="w"> </span><span class="kn">import</span> <span class="n">Public</span><span class="p">,</span> <span class="n">collect_app_routes</span><span class="p">,</span> <span class="n">resolve_routes</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">public_routes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">resolve_routes</span><span class="p">(</span><span class="n">collect_app_routes</span><span class="p">(</span><span class="n">app</span><span class="p">),</span> <span class="n">Public</span><span class="p">()))</span>
 </span></code></pre></div>
 <p>Internally this uses <code>resolve_route</code>, which reads a <code>BaseRoute</code>'s metadata and
 evaluates the spec against it with <code>Yes()</code> as the default.</p>

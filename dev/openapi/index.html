@@ -713,6 +713,10 @@ produced its routes via a <code>router_wrapper_class</code> attribute:</p>
 (<code>/api/docs/public/...</code>) that redirect to its versioned URLs, and the root
 redirects (<code>/</code>, <code>/docs</code>, <code>/swagger-ui</code>, <code>/redoc</code>, <code>/openapi.json</code>) point into the
 docs tree.</p>
+<p>For those root redirects to win, <code>add_doc_routes_for_app</code> removes FastAPI's
+built-in unversioned <code>/docs</code>, <code>/redoc</code> and <code>/openapi.json</code> by default (they would
+otherwise shadow them). Pass <code>disable_builtin_docs=False</code> to keep the built-in
+docs instead.</p>
 <h2 id="categories">Categories<a class="headerlink" href="#categories" title="Permanent link">&para;</a></h2>
 <p>A category is one filtered OpenAPI document. The two defaults are <code>internal</code>
 (every route of the version) and <code>public</code> (routes additionally matching

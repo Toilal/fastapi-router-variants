@@ -737,6 +737,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#reference-specs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Reference specs
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#resolveroute_specnone-router_specnone-default_specnone-pathnone-methodsnone-deprecatednone-response_modelnone-response_classjsonresponse-openapi_extranone-bool" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -776,10 +787,21 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#add_doc_routes_for_appapp-openapi_specs_dirnone-categoriesdefault_categories-title_prefix-swagger_js_url-swagger_css_url-redoc_js_url-skip_add_routesfalse-openapispecs" class="md-nav__link">
+  <a href="#add_doc_routes_for_appapp-openapi_specs_dirnone-categoriesdefault_categories-title_prefix-swagger_js_url-swagger_css_url-redoc_js_url-skip_add_routesfalse-disable_builtin_docstrue-openapispecs" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <code>add_doc_routes_for_app(app, *, openapi_specs_dir=None, categories=DEFAULT_CATEGORIES, title_prefix="", swagger_js_url=..., swagger_css_url=..., redoc_js_url=..., skip_add_routes=False) -&gt; OpenapiSpecs</code>
+        <code>add_doc_routes_for_app(app, *, openapi_specs_dir=None, categories=DEFAULT_CATEGORIES, title_prefix="", swagger_js_url=..., swagger_css_url=..., redoc_js_url=..., skip_add_routes=False, disable_builtin_docs=True) -&gt; OpenapiSpecs</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disable_default_docsapp-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>disable_default_docs(app) -&gt; None</code>
       </span>
     </span>
   </a>
@@ -936,10 +958,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#load_markdown-str" class="md-nav__link">
+  <a href="#load_markdownfilenamedocmd-relative_tonone-str" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <code>load_markdown() -&gt; str</code>
+        <code>load_markdown(filename="doc.md", *, relative_to=None) -&gt; str</code>
       </span>
     </span>
   </a>
@@ -1310,6 +1332,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#reference-specs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Reference specs
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#resolveroute_specnone-router_specnone-default_specnone-pathnone-methodsnone-deprecatednone-response_modelnone-response_classjsonresponse-openapi_extranone-bool" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1349,10 +1382,21 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#add_doc_routes_for_appapp-openapi_specs_dirnone-categoriesdefault_categories-title_prefix-swagger_js_url-swagger_css_url-redoc_js_url-skip_add_routesfalse-openapispecs" class="md-nav__link">
+  <a href="#add_doc_routes_for_appapp-openapi_specs_dirnone-categoriesdefault_categories-title_prefix-swagger_js_url-swagger_css_url-redoc_js_url-skip_add_routesfalse-disable_builtin_docstrue-openapispecs" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <code>add_doc_routes_for_app(app, *, openapi_specs_dir=None, categories=DEFAULT_CATEGORIES, title_prefix="", swagger_js_url=..., swagger_css_url=..., redoc_js_url=..., skip_add_routes=False) -&gt; OpenapiSpecs</code>
+        <code>add_doc_routes_for_app(app, *, openapi_specs_dir=None, categories=DEFAULT_CATEGORIES, title_prefix="", swagger_js_url=..., swagger_css_url=..., redoc_js_url=..., skip_add_routes=False, disable_builtin_docs=True) -&gt; OpenapiSpecs</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disable_default_docsapp-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>disable_default_docs(app) -&gt; None</code>
       </span>
     </span>
   </a>
@@ -1509,10 +1553,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#load_markdown-str" class="md-nav__link">
+  <a href="#load_markdownfilenamedocmd-relative_tonone-str" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <code>load_markdown() -&gt; str</code>
+        <code>load_markdown(filename="doc.md", *, relative_to=None) -&gt; str</code>
       </span>
     </span>
   </a>
@@ -1700,15 +1744,31 @@ upper bounds were set explicitly.</p>
 <ul>
 <li><code>And(*specs)</code> / <code>Or(*specs)</code> / <code>Not(spec)</code> — accept specs or booleans.</li>
 </ul>
+<h3 id="reference-specs">Reference specs<a class="headerlink" href="#reference-specs" title="Permanent link">&para;</a></h3>
+<p>Placeholders used inside a spec to compose across the route / router / default
+levels resolved by <code>resolve()</code> (see <a href="../specs/#composing-across-levels">Routing specs</a>):</p>
+<ul>
+<li><code>DefaultsReference()</code> / <code>RouterReference()</code> / <code>RouteReference()</code> — replaced by
+  the default / router / route spec respectively.</li>
+<li><code>ChildReference()</code> — replaced by the next level down.</li>
+<li><code>WithoutDefaults()</code> / <code>WithoutRouter()</code> — opt a spec out of the default /
+  router fallback.</li>
+</ul>
 <h3 id="resolveroute_specnone-router_specnone-default_specnone-pathnone-methodsnone-deprecatednone-response_modelnone-response_classjsonresponse-openapi_extranone-bool"><code>resolve(route_spec=None, router_spec=None, default_spec=None, *, path=None, methods=None, deprecated=None, response_model=None, response_class=JSONResponse, openapi_extra=None) -&gt; bool</code><a class="headerlink" href="#resolveroute_specnone-router_specnone-default_specnone-pathnone-methodsnone-deprecatednone-response_modelnone-response_classjsonresponse-openapi_extranone-bool" title="Permanent link">&para;</a></h3>
 <p>Evaluate specs with route/router/default precedence against the route metadata.</p>
 <h3 id="resolve_routesroutes-spec"><code>resolve_routes(routes, spec)</code><a class="headerlink" href="#resolve_routesroutes-spec" title="Permanent link">&para;</a></h3>
 <p>Lazily yield the routes of an iterable that match <code>spec</code> (using <code>Yes()</code> as the
 default).</p>
 <h2 id="openapi-documentation">OpenAPI documentation<a class="headerlink" href="#openapi-documentation" title="Permanent link">&para;</a></h2>
-<h3 id="add_doc_routes_for_appapp-openapi_specs_dirnone-categoriesdefault_categories-title_prefix-swagger_js_url-swagger_css_url-redoc_js_url-skip_add_routesfalse-openapispecs"><code>add_doc_routes_for_app(app, *, openapi_specs_dir=None, categories=DEFAULT_CATEGORIES, title_prefix="", swagger_js_url=..., swagger_css_url=..., redoc_js_url=..., skip_add_routes=False) -&gt; OpenapiSpecs</code><a class="headerlink" href="#add_doc_routes_for_appapp-openapi_specs_dirnone-categoriesdefault_categories-title_prefix-swagger_js_url-swagger_css_url-redoc_js_url-skip_add_routesfalse-openapispecs" title="Permanent link">&para;</a></h3>
+<h3 id="add_doc_routes_for_appapp-openapi_specs_dirnone-categoriesdefault_categories-title_prefix-swagger_js_url-swagger_css_url-redoc_js_url-skip_add_routesfalse-disable_builtin_docstrue-openapispecs"><code>add_doc_routes_for_app(app, *, openapi_specs_dir=None, categories=DEFAULT_CATEGORIES, title_prefix="", swagger_js_url=..., swagger_css_url=..., redoc_js_url=..., skip_add_routes=False, disable_builtin_docs=True) -&gt; OpenapiSpecs</code><a class="headerlink" href="#add_doc_routes_for_appapp-openapi_specs_dirnone-categoriesdefault_categories-title_prefix-swagger_js_url-swagger_css_url-redoc_js_url-skip_add_routesfalse-disable_builtin_docstrue-openapispecs" title="Permanent link">&para;</a></h3>
 <p>High-level entry point: read the app's <code>router_wrapper_class.defaults</code> and mount
-the docs for every version and category under <code>{prefix}/docs</code>.</p>
+the docs for every version and category under <code>{prefix}/docs</code>. By default it also
+removes FastAPI's built-in unversioned <code>/docs</code>, <code>/redoc</code> and <code>/openapi.json</code>
+(see <code>disable_default_docs</code>); pass <code>disable_builtin_docs=False</code> to keep them.</p>
+<h3 id="disable_default_docsapp-none"><code>disable_default_docs(app) -&gt; None</code><a class="headerlink" href="#disable_default_docsapp-none" title="Permanent link">&para;</a></h3>
+<p>Remove FastAPI's built-in <code>/docs</code>, <code>/redoc</code> and <code>/openapi.json</code> routes (and null
+the matching URLs) so they no longer shadow the per-version documentation and its
+root redirects.</p>
 <h3 id="add_doc_routes_for_all_versionsapp-openapi_provider-doc_prefix-prefix-default_versionnone-openapispecs"><code>add_doc_routes_for_all_versions(app, openapi_provider, doc_prefix="", prefix="", default_version=None, ...) -&gt; OpenapiSpecs</code><a class="headerlink" href="#add_doc_routes_for_all_versionsapp-openapi_provider-doc_prefix-prefix-default_versionnone-openapispecs" title="Permanent link">&para;</a></h3>
 <p>Mount every version's docs, plus an <code>/all</code> aggregate when a version range exists,
 and the root redirects.</p>
@@ -1745,10 +1805,12 @@ included routers and mounts).</p>
 <p>Build an OpenAPI 3.1.0 document for a fixed set of routes, inheriting the app's
 metadata.</p>
 <h2 id="docs-helpers">Docs helpers<a class="headerlink" href="#docs-helpers" title="Permanent link">&para;</a></h2>
-<h3 id="load_markdown-str"><code>load_markdown() -&gt; str</code><a class="headerlink" href="#load_markdown-str" title="Permanent link">&para;</a></h3>
-<p>Read a <code>doc.md</code> file sitting next to the caller's caller module (resolved two
-frames up), returning <code>""</code> when absent. Used by <code>get_csv_export</code> to attach
-long-form descriptions.</p>
+<h3 id="load_markdownfilenamedocmd-relative_tonone-str"><code>load_markdown(filename="doc.md", *, relative_to=None) -&gt; str</code><a class="headerlink" href="#load_markdownfilenamedocmd-relative_tonone-str" title="Permanent link">&para;</a></h3>
+<p>Read a markdown file, returning <code>""</code> when absent. Pass <code>relative_to=__file__</code>
+(the robust option) to resolve <code>filename</code> against that module's directory, or an
+absolute <code>filename</code> to read it directly; without <code>relative_to</code> the base
+directory is taken two frames up. Used by <code>get_csv_export</code> to attach long-form
+descriptions.</p>
 
 
 

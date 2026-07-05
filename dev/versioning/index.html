@@ -703,6 +703,17 @@ marked deprecated when either:</p>
   with the high bound set) — the newest version of a closed window is assumed to
   be the last one before the next iteration.</li>
 </ul>
+<p>The distinction is between <strong>open</strong> and <strong>closed</strong> windows:</p>
+<ul>
+<li><strong>Open</strong> window — <code>version=True</code>, <code>version=N</code>, or <code>version=(low, None)</code>. The top
+  version is <em>not</em> auto-deprecated, because the window is expected to keep growing.</li>
+<li><strong>Closed</strong> window — <code>version=(low, high)</code> with an explicit high bound. The top
+  version <em>is</em> auto-deprecated.</li>
+</ul>
+<p>This is decided per route, from that route's own window. A <code>Route(...,
+version=(2, 3))</code> placed inside a decorator with a broader open window (say
+<code>version=True</code> over <code>(1, 5)</code>) still has its own top — <code>v3</code> — auto-deprecated,
+while the open routes keep their top (<code>v5</code>) active.</p>
 <p>An explicit <code>deprecated</code> value on the <code>Route</code> or decorator always wins over this
 heuristic.</p>
 <h2 id="reading-the-version-back-from-a-path">Reading the version back from a path<a class="headerlink" href="#reading-the-version-back-from-a-path" title="Permanent link">&para;</a></h2>
