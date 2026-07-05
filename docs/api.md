@@ -270,8 +270,10 @@ metadata.
 
 ## Docs helpers
 
-### `load_markdown() -> str`
+### `load_markdown(filename="doc.md", *, relative_to=None) -> str`
 
-Read a `doc.md` file sitting next to the caller's caller module (resolved two
-frames up), returning `""` when absent. Used by `get_csv_export` to attach
-long-form descriptions.
+Read a markdown file, returning `""` when absent. Pass `relative_to=__file__`
+(the robust option) to resolve `filename` against that module's directory, or an
+absolute `filename` to read it directly; without `relative_to` the base
+directory is taken two frames up. Used by `get_csv_export` to attach long-form
+descriptions.

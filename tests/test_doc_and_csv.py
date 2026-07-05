@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 from fastapi.routing import APIRoute
 
@@ -7,6 +9,28 @@ from fastapi_router_variants.doc import load_markdown
 
 def test_load_markdown_returns_empty_without_file() -> None:
     assert load_markdown() == ""
+
+
+def test_load_markdown_relative_to_directory(tmp_path: Path) -> None:
+    (tmp_path / "doc.md").write_text("# hello")
+    assert load_markdown(relative_to=tmp_path) == "# hello"
+
+
+def test_load_markdown_relative_to_module_file(tmp_path: Path) -> None:
+    (tmp_path / "doc.md").write_text("from module")
+    module_file = tmp_path / "routes.py"
+    assert load_markdown(relative_to=module_file) == "from module"
+
+
+def test_load_markdown_custom_filename_and_absolute(tmp_path: Path) -> None:
+    target = tmp_path / "custom.md"
+    target.write_text("custom")
+    assert load_markdown("custom.md", relative_to=tmp_path) == "custom"
+    assert load_markdown(target) == "custom"
+
+
+def test_load_markdown_missing_relative_file_is_empty(tmp_path: Path) -> None:
+    assert load_markdown(relative_to=tmp_path) == ""
 
 
 class TestCsvExport:
