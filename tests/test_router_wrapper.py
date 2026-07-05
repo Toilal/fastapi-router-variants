@@ -1,4 +1,3 @@
-from collections.abc import Callable
 from dataclasses import dataclass
 
 import pytest
@@ -398,50 +397,6 @@ class TestRegistrationAndDispatch:
 
         paths = {r.path for r in collect_app_routes(app) if isinstance(r, APIRoute)}
         assert "/child" in paths
-
-
-class TestRolesAndFeatures:
-    @pytest.fixture(autouse=True)
-    def configure_defaults_fixture(self) -> None:
-        class CustomDefaults(RouterDefaults):
-            version = False
-
-        RouterWrapper.defaults = CustomDefaults()
-        return
-
-    def test_require_roles_adds_dependency_and_description(self) -> None:
-        def require_roles(roles: set[str]) -> Callable[[], None]:
-            def dep() -> None: ...
-
-            return dep
-
-        RouterWrapper.require_roles = staticmethod(require_roles)
-
-        router = RouterWrapper()
-
-        @router.get("/secure", require_roles={"admin"})
-        def secure() -> None: ...
-
-        route = next(r for r in router.base.routes if isinstance(r, APIRoute))
-        assert len(route.dependencies) == 1
-        assert "Role needed: admin" in (route.description or "")
-
-    def test_require_features_adds_dependency_and_description(self) -> None:
-        def require_features(*features: str) -> Callable[[], None]:
-            def dep() -> None: ...
-
-            return dep
-
-        RouterWrapper.require_features = staticmethod(require_features)
-
-        router = RouterWrapper()
-
-        @router.get("/flagged", require_features={"beta"})
-        def flagged() -> None: ...
-
-        route = next(r for r in router.base.routes if isinstance(r, APIRoute))
-        assert len(route.dependencies) == 1
-        assert "Feature needed: beta" in (route.description or "")
 
 
 class MyError(Exception):

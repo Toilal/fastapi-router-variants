@@ -57,8 +57,8 @@ The single `get` declaration above registers `GET /api/v1/users/{user_id}`,
 `GET /api/v2/users/{user_id}` and `GET /api/v3/users/{user_id}`.
 
 Path variants and flavors, versioning helpers, routing specs, per-version
-OpenAPI documents, custom categories, HTTP-error auto-documentation and
-role/feature injection are all covered in the documentation.
+OpenAPI documents, custom categories and HTTP-error auto-documentation are
+all covered in the documentation.
 
 ## Documentation
 
