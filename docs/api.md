@@ -182,6 +182,17 @@ Base callable predicate over a route's metadata (`path`, `methods`,
 
 - `And(*specs)` / `Or(*specs)` / `Not(spec)` — accept specs or booleans.
 
+### Reference specs
+
+Placeholders used inside a spec to compose across the route / router / default
+levels resolved by `resolve()` (see [Routing specs](specs.md#composing-across-levels)):
+
+- `DefaultsReference()` / `RouterReference()` / `RouteReference()` — replaced by
+  the default / router / route spec respectively.
+- `ChildReference()` — replaced by the next level down.
+- `WithoutDefaults()` / `WithoutRouter()` — opt a spec out of the default /
+  router fallback.
+
 ### `resolve(route_spec=None, router_spec=None, default_spec=None, *, path=None, methods=None, deprecated=None, response_model=None, response_class=JSONResponse, openapi_extra=None) -> bool`
 
 Evaluate specs with route/router/default precedence against the route metadata.

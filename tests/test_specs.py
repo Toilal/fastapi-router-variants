@@ -248,3 +248,18 @@ class TestSpecs:
             )
             is False
         )
+
+
+def test_reference_specs_are_exported() -> None:
+    import fastapi_router_variants as frv
+
+    for name in (
+        "DefaultsReference",
+        "RouterReference",
+        "ChildReference",
+        "RouteReference",
+        "WithoutDefaults",
+        "WithoutRouter",
+    ):
+        assert name in frv.__all__
+        assert hasattr(frv, name)

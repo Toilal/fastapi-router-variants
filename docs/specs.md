@@ -67,6 +67,31 @@ is_read = resolve(
 `resolve` returns a concrete `bool`; if the resolved spec yields `None` (unset)
 and no `Yes()`/`No()` default is supplied, it raises `UnsetResultError`.
 
+## Composing across levels
+
+By default the most specific non-unset spec wins (route over router over
+default). The *reference* specs let a spec at one level splice in another
+level's spec instead of shadowing it, and the *without* specs opt a level out:
+
+- `DefaultsReference()` — placeholder replaced by the `default_spec`.
+- `RouterReference()` — placeholder replaced by the `router_spec`.
+- `RouteReference()` — placeholder replaced by the `route_spec`.
+- `ChildReference()` — placeholder replaced by the next level down (the router
+  spec when resolving a default, the route spec when resolving a router).
+- `WithoutDefaults()` / `WithoutRouter()` — mark a spec so resolution does not
+  fall back to the default / router level.
+
+```python
+from fastapi_router_variants import DefaultsReference, Methods, Or, resolve
+
+# A router that adds POST on top of whatever the defaults already allow.
+allowed = resolve(
+    router_spec=Or(Methods("POST"), DefaultsReference()),
+    default_spec=Methods("GET"),
+    methods=["GET"],
+)  # True — matched through the referenced default
+```
+
 ## Filtering routes
 
 `resolve_routes(routes, spec)` lazily yields the routes of an iterable that match
