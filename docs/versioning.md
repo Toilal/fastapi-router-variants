@@ -64,6 +64,18 @@ marked deprecated when either:
   with the high bound set) — the newest version of a closed window is assumed to
   be the last one before the next iteration.
 
+The distinction is between **open** and **closed** windows:
+
+- **Open** window — `version=True`, `version=N`, or `version=(low, None)`. The top
+  version is *not* auto-deprecated, because the window is expected to keep growing.
+- **Closed** window — `version=(low, high)` with an explicit high bound. The top
+  version *is* auto-deprecated.
+
+This is decided per route, from that route's own window. A `Route(...,
+version=(2, 3))` placed inside a decorator with a broader open window (say
+`version=True` over `(1, 5)`) still has its own top — `v3` — auto-deprecated,
+while the open routes keep their top (`v5`) active.
+
 An explicit `deprecated` value on the `Route` or decorator always wins over this
 heuristic.
 
