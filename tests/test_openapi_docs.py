@@ -278,6 +278,41 @@ class TestDocRoutesMounting:
         )
 
 
+class TestDocRedirects:
+    @pytest.mark.parametrize(
+        ("source", "target"),
+        [
+            ("/api/docs", "/api/docs/v1"),
+            ("/api/docs/v1", "/api/docs/v1/public"),
+            ("/api/docs/v2", "/api/docs/v2/public"),
+            ("/api/docs/public", "/api/docs/v1/public"),
+            ("/api/docs/swagger-ui", "/api/docs/v1/public/swagger-ui"),
+            ("/api/docs/redoc", "/api/docs/v1/public/redoc"),
+            ("/api/docs/openapi.json", "/api/docs/v1/public/openapi.json"),
+            ("/api", "/api/docs"),
+            ("/", "/api/docs"),
+        ],
+    )
+    def test_redirect_targets(self, source: str, target: str) -> None:
+        app, _ = _build_app()
+        add_doc_routes_for_app(app)
+        client = TestClient(app, follow_redirects=False)
+
+        response = client.get(source)
+        assert response.status_code == 307
+        assert response.headers["location"] == target
+
+    def test_root_redirect_chain_reaches_swagger(self) -> None:
+        app, _ = _build_app()
+        add_doc_routes_for_app(app)
+        client = TestClient(app)
+
+        response = client.get("/api/docs")
+        assert response.status_code == 200
+        assert str(response.url).endswith("/api/docs/v1/public/swagger-ui")
+        assert "swagger-ui" in response.text.lower()
+
+
 class TestLocalFilesProvider:
     def test_roundtrip(self, tmp_path: Path) -> None:
         provider = LocalFilesOpenapiProvider(tmp_path)
