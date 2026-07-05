@@ -1,0 +1,1904 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Path variants, API versioning and per-version OpenAPI documentation for FastAPI routers">
+      
+      
+        <meta name="author" content="Rémi Alvergnat <toilal.dev@gmail.com>">
+      
+      
+        <link rel="canonical" href="https://toilal.github.io/fastapi-router-variants/api/">
+      
+      
+        <link rel="prev" href="../openapi/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="zensical-0.0.46">
+    
+    
+      
+        <title>API reference - FastAPI Router Variants</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.19d3147f.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../assets/stylesheets/modern/palette.dfe2e883.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#api-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="./.." title="FastAPI Router Variants" class="md-header__button md-logo" aria-label="FastAPI Router Variants" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            FastAPI Router Variants
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="none" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="none" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/Toilal/fastapi-router-variants" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Toilal/fastapi-router-variants
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="./.." title="FastAPI Router Variants" class="md-nav__button md-logo" aria-label="FastAPI Router Variants" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+
+    </a>
+    FastAPI Router Variants
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Toilal/fastapi-router-variants" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Toilal/fastapi-router-variants
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Home
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../variants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Path variants
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../versioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  API versioning
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../specs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Routing specs
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../openapi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  OpenAPI documentation
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  API reference
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  API reference
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#router" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Router
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Router">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#routerwrapper" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouterWrapper</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routerdefaults" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouterDefaults</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routerdefaultsprotocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouterDefaultsProtocol</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versioningdefaultsprotocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>VersioningDefaultsProtocol</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routeroperationidsettings" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouterOperationIdSettings</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routeruniqueidgenerator" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouterUniqueIdGenerator</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routerecorder" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouteRecorder</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routetype" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouteType</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routerwrappererror" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouterWrapperError</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_redirect_routeapp-from_path-to_url" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>add_redirect_route(app, from_path, to_url)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#path-variants-and-versioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Path variants and versioning
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Path variants and versioning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#route" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>Route</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routeflavor" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouteFlavor</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routeflavors" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouteFlavors</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versionspec-pathspec-prefixspec-deploymentspec" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>VersionSpec</code> / <code>PathSpec</code> / <code>PrefixSpec</code> / <code>DeploymentSpec</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disabled" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>Disabled</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api_version_from_pathpath-int-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>api_version_from_path(path) -&gt; int | None</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#normalize_version_specspec-tupleint-none-int-none-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>normalize_version_spec(spec) -&gt; tuple[int | None, int | None] | None</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version_range_from_specversion_range-route_version-tupleversionrange-none-bool-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>version_range_from_spec(version_range, route_version) -&gt; tuple[VersionRange | None, bool, bool]</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versioned_routesroutes-defaults_version_range-route_version-version_deprecatednone" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>versioned_routes(routes, defaults_version_range, route_version, version_deprecated=None)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefixed_routesroutes-prefix" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>prefixed_routes(routes, prefix)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variants_routesroutes-defaults-router_prefix-router_version-router_deployment-prefix-version-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>variants_routes(routes, defaults, router_prefix, router_version, router_deployment, prefix, version, deployment)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#routing-specs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Routing specs
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Routing specs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#routingspec" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RoutingSpec</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leaf-specs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Leaf specs
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#combinators" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Combinators
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reference-specs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Reference specs
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resolveroute_specnone-router_specnone-default_specnone-pathnone-methodsnone-deprecatednone-response_modelnone-response_classjsonresponse-openapi_extranone-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>resolve(route_spec=None, router_spec=None, default_spec=None, *, path=None, methods=None, deprecated=None, response_model=None, response_class=JSONResponse, openapi_extra=None) -&gt; bool</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resolve_routesroutes-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>resolve_routes(routes, spec)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openapi-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        OpenAPI documentation
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenAPI documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#add_doc_routes_for_appapp-openapi_specs_dirnone-categoriesdefault_categories-title_prefix-swagger_js_url-swagger_css_url-redoc_js_url-skip_add_routesfalse-disable_builtin_docstrue-openapispecs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>add_doc_routes_for_app(app, *, openapi_specs_dir=None, categories=DEFAULT_CATEGORIES, title_prefix="", swagger_js_url=..., swagger_css_url=..., redoc_js_url=..., skip_add_routes=False, disable_builtin_docs=True) -&gt; OpenapiSpecs</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disable_default_docsapp-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>disable_default_docs(app) -&gt; None</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_doc_routes_for_all_versionsapp-openapi_provider-doc_prefix-prefix-default_versionnone-openapispecs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>add_doc_routes_for_all_versions(app, openapi_provider, doc_prefix="", prefix="", default_version=None, ...) -&gt; OpenapiSpecs</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_doc_routes_for_versionapp-openapi_provider-doc_prefix-versionnone-default_versionfalse-skip_add_routesfalse-version_prefixnone-dictstr-dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>add_doc_routes_for_version(app, openapi_provider, doc_prefix="", version=None, default_version=False, skip_add_routes=False, version_prefix=None, ...) -&gt; dict[str, dict]</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_doc_routes_for_openapi_specapp-openapi_spec-prefix-redirect_prefixesnone-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>add_doc_routes_for_openapi_spec(app, openapi_spec, prefix, redirect_prefixes=None, ...) -&gt; None</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openapicategory" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>OpenapiCategory</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openapispeccategory" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>OpenapiSpecCategory</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openapispecs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>OpenapiSpecs</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openapiprovider" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>OpenapiProvider</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#appopenapiproviderapp-routes-categoriesdefault_categories-title_prefix" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>AppOpenapiProvider(app, routes, categories=DEFAULT_CATEGORIES, title_prefix="")</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#localfilesopenapiproviderpath-categoriesdefault_categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>LocalFilesOpenapiProvider(path, categories=DEFAULT_CATEGORIES)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openapi_provider_factoryapp-openapi_specs_dirnone-categoriesdefault_categories-title_prefix-openapiprovider" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>openapi_provider_factory(app, openapi_specs_dir=None, categories=DEFAULT_CATEGORIES, title_prefix="") -&gt; OpenapiProvider</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#collect_app_routescontainer-listbaseroute" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>collect_app_routes(container) -&gt; list[BaseRoute]</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_openapi_staticapp-title-routes-dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>get_openapi_static(app, title, routes) -&gt; dict</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docs-helpers" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Docs helpers
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Docs helpers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load_markdownfilenamedocmd-relative_tonone-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>load_markdown(filename="doc.md", *, relative_to=None) -&gt; str</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#router" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Router
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Router">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#routerwrapper" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouterWrapper</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routerdefaults" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouterDefaults</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routerdefaultsprotocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouterDefaultsProtocol</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versioningdefaultsprotocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>VersioningDefaultsProtocol</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routeroperationidsettings" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouterOperationIdSettings</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routeruniqueidgenerator" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouterUniqueIdGenerator</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routerecorder" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouteRecorder</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routetype" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouteType</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routerwrappererror" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouterWrapperError</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_redirect_routeapp-from_path-to_url" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>add_redirect_route(app, from_path, to_url)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#path-variants-and-versioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Path variants and versioning
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Path variants and versioning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#route" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>Route</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routeflavor" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouteFlavor</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routeflavors" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RouteFlavors</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versionspec-pathspec-prefixspec-deploymentspec" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>VersionSpec</code> / <code>PathSpec</code> / <code>PrefixSpec</code> / <code>DeploymentSpec</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disabled" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>Disabled</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api_version_from_pathpath-int-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>api_version_from_path(path) -&gt; int | None</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#normalize_version_specspec-tupleint-none-int-none-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>normalize_version_spec(spec) -&gt; tuple[int | None, int | None] | None</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version_range_from_specversion_range-route_version-tupleversionrange-none-bool-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>version_range_from_spec(version_range, route_version) -&gt; tuple[VersionRange | None, bool, bool]</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versioned_routesroutes-defaults_version_range-route_version-version_deprecatednone" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>versioned_routes(routes, defaults_version_range, route_version, version_deprecated=None)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefixed_routesroutes-prefix" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>prefixed_routes(routes, prefix)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variants_routesroutes-defaults-router_prefix-router_version-router_deployment-prefix-version-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>variants_routes(routes, defaults, router_prefix, router_version, router_deployment, prefix, version, deployment)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#routing-specs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Routing specs
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Routing specs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#routingspec" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>RoutingSpec</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leaf-specs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Leaf specs
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#combinators" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Combinators
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reference-specs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Reference specs
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resolveroute_specnone-router_specnone-default_specnone-pathnone-methodsnone-deprecatednone-response_modelnone-response_classjsonresponse-openapi_extranone-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>resolve(route_spec=None, router_spec=None, default_spec=None, *, path=None, methods=None, deprecated=None, response_model=None, response_class=JSONResponse, openapi_extra=None) -&gt; bool</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resolve_routesroutes-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>resolve_routes(routes, spec)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openapi-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        OpenAPI documentation
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenAPI documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#add_doc_routes_for_appapp-openapi_specs_dirnone-categoriesdefault_categories-title_prefix-swagger_js_url-swagger_css_url-redoc_js_url-skip_add_routesfalse-disable_builtin_docstrue-openapispecs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>add_doc_routes_for_app(app, *, openapi_specs_dir=None, categories=DEFAULT_CATEGORIES, title_prefix="", swagger_js_url=..., swagger_css_url=..., redoc_js_url=..., skip_add_routes=False, disable_builtin_docs=True) -&gt; OpenapiSpecs</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disable_default_docsapp-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>disable_default_docs(app) -&gt; None</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_doc_routes_for_all_versionsapp-openapi_provider-doc_prefix-prefix-default_versionnone-openapispecs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>add_doc_routes_for_all_versions(app, openapi_provider, doc_prefix="", prefix="", default_version=None, ...) -&gt; OpenapiSpecs</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_doc_routes_for_versionapp-openapi_provider-doc_prefix-versionnone-default_versionfalse-skip_add_routesfalse-version_prefixnone-dictstr-dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>add_doc_routes_for_version(app, openapi_provider, doc_prefix="", version=None, default_version=False, skip_add_routes=False, version_prefix=None, ...) -&gt; dict[str, dict]</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add_doc_routes_for_openapi_specapp-openapi_spec-prefix-redirect_prefixesnone-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>add_doc_routes_for_openapi_spec(app, openapi_spec, prefix, redirect_prefixes=None, ...) -&gt; None</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openapicategory" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>OpenapiCategory</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openapispeccategory" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>OpenapiSpecCategory</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openapispecs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>OpenapiSpecs</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openapiprovider" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>OpenapiProvider</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#appopenapiproviderapp-routes-categoriesdefault_categories-title_prefix" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>AppOpenapiProvider(app, routes, categories=DEFAULT_CATEGORIES, title_prefix="")</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#localfilesopenapiproviderpath-categoriesdefault_categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>LocalFilesOpenapiProvider(path, categories=DEFAULT_CATEGORIES)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openapi_provider_factoryapp-openapi_specs_dirnone-categoriesdefault_categories-title_prefix-openapiprovider" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>openapi_provider_factory(app, openapi_specs_dir=None, categories=DEFAULT_CATEGORIES, title_prefix="") -&gt; OpenapiProvider</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#collect_app_routescontainer-listbaseroute" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>collect_app_routes(container) -&gt; list[BaseRoute]</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_openapi_staticapp-title-routes-dict" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>get_openapi_static(app, title, routes) -&gt; dict</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docs-helpers" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Docs helpers
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Docs helpers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#load_markdownfilenamedocmd-relative_tonone-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>load_markdown(filename="doc.md", *, relative_to=None) -&gt; str</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+    <a href="https://github.com/Toilal/fastapi-router-variants/edit/develop/docs/api.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-pen" viewBox="0 0 24 24"><path d="M12.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v9.34"/><path d="M14 2v5a1 1 0 0 0 1 1h5M10.378 12.622a1 1 0 0 1 3 3.003L8.36 20.637a2 2 0 0 1-.854.506l-2.867.837a.5.5 0 0 1-.62-.62l.836-2.869a2 2 0 0 1 .506-.853z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/Toilal/fastapi-router-variants/raw/develop/docs/api.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-code-2" viewBox="0 0 24 24"><path d="M4 12.15V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3.35"/><path d="M14 2v5a1 1 0 0 0 1 1h5M5 16l-3 3 3 3M9 22l3-3-3-3"/></svg>
+    </a>
+  
+
+
+<h1 id="api-reference">API reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
+<p>Every symbol below is importable directly from <code>fastapi_router_variants</code>.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi_router_variants</span><span class="w"> </span><span class="kn">import</span> <span class="n">RouterWrapper</span><span class="p">,</span> <span class="n">RouterDefaults</span><span class="p">,</span> <span class="n">Route</span>  <span class="c1"># etc.</span>
+</span></code></pre></div>
+<h2 id="router">Router<a class="headerlink" href="#router" title="Permanent link">&para;</a></h2>
+<h3 id="routerwrapper"><code>RouterWrapper</code><a class="headerlink" href="#routerwrapper" title="Permanent link">&para;</a></h3>
+<p>Wraps a FastAPI <code>APIRouter</code> and expands each route declaration into its
+variants. The wrapped router is exposed as <code>router.base</code>.</p>
+<ul>
+<li><code>defaults: RouterDefaultsProtocol</code> — class attribute holding the versioning /
+  prefix / documentation defaults (defaults to <code>RouterDefaults()</code>).</li>
+<li>Route decorators: <code>get</code>, <code>post</code>, <code>put</code>, <code>patch</code>, <code>delete</code>, <code>api_route</code>,
+  <code>websocket</code>, plus <code>get_csv_export</code> (a CSV-download <code>GET</code> with an example
+  table). Each accepts the FastAPI route arguments plus <code>version</code>, <code>prefix</code>,
+  <code>deployment</code>, <code>public</code>, <code>requires</code>, <code>exceptions</code>, and description helpers
+  (<code>summary</code>, <code>headline</code>, <code>points</code>, <code>doc</code>, <code>deprecated</code>).</li>
+<li><code>include_router(router, **kwargs)</code> — include an <code>APIRouter</code> or another
+  <code>RouterWrapper</code>.</li>
+<li><code>is_public_route(path, ...) -&gt; bool</code> — resolve whether a route is public.</li>
+<li><code>variants_decorator_wrapper(...)</code> — the internal combinator that expands a
+  path spec into per-variant decorators.</li>
+<li><code>reset_defaults()</code> (classmethod) — restore <code>defaults</code> to <code>RouterDefaults()</code>.</li>
+<li><code>recording(recorder)</code> (classmethod, context manager) — activate a
+  <code>RouteRecorder</code>; while active the decorators report each variant instead of
+  mounting it.</li>
+</ul>
+<h3 id="routerdefaults"><code>RouterDefaults</code><a class="headerlink" href="#routerdefaults" title="Permanent link">&para;</a></h3>
+<p>Frozen dataclass implementing <code>RouterDefaultsProtocol</code> — subclass it to declare
+your defaults.</p>
+<h3 id="routerdefaultsprotocol"><code>RouterDefaultsProtocol</code><a class="headerlink" href="#routerdefaultsprotocol" title="Permanent link">&para;</a></h3>
+<p>The full set of default fields (extends <code>VersioningDefaultsProtocol</code>):</p>
+<ul>
+<li><code>public: RoutingSpec | None</code> — spec identifying public routes.</li>
+<li><code>version_default: int</code> — version used on unversioned doc URLs (default <code>1</code>).</li>
+<li><code>requires: list | None</code> — dependencies added to every route.</li>
+<li><code>deployment: str | None</code> — default deployment declared on every route.</li>
+<li><code>operation_id_settings: RouterOperationIdSettings</code> — OpenAPI operation-id
+  generation settings.</li>
+<li><code>autodoc_http_errors: bool</code> — enable automatic OpenAPI documentation of raised
+  HTTP errors (off by default).</li>
+<li><code>http_error_base: type</code> — base type identifying documentable error classes.</li>
+<li><code>exception_scanner: Callable[[Callable], set[type]] | None</code> — hook returning
+  the error types a callable may raise (wrap in <code>staticmethod</code>).</li>
+<li><code>error_schema_builder: Callable[[set[type]], Any] | None</code> — hook turning error
+  types into an OpenAPI <code>responses</code> mapping (wrap in <code>staticmethod</code>).</li>
+</ul>
+<h3 id="versioningdefaultsprotocol"><code>VersioningDefaultsProtocol</code><a class="headerlink" href="#versioningdefaultsprotocol" title="Permanent link">&para;</a></h3>
+<p>The versioning subset of the defaults:</p>
+<ul>
+<li><code>prefix: str | bool | type[Disabled] | None</code> — default mount prefix (<code>True</code>
+  forces a prefix on every route).</li>
+<li><code>version: VersionSpec | None</code> — default version behaviour (<code>True</code> forces
+  versioning).</li>
+<li><code>version_range: VersionRange</code> — the closed range expanded for full-range
+  routes (default <code>(1, 1)</code>).</li>
+<li><code>version_deprecated: int | None</code> — versions at or below are marked deprecated.</li>
+</ul>
+<h3 id="routeroperationidsettings"><code>RouterOperationIdSettings</code><a class="headerlink" href="#routeroperationidsettings" title="Permanent link">&para;</a></h3>
+<p>Frozen, keyword-only dataclass tuning operation-id generation:
+<code>segment_aliases</code>, <code>segment_exclusions</code>, <code>singular_mappings</code>,
+<code>plural_mappings</code>.</p>
+<h3 id="routeruniqueidgenerator"><code>RouterUniqueIdGenerator</code><a class="headerlink" href="#routeruniqueidgenerator" title="Permanent link">&para;</a></h3>
+<p><code>RouterUniqueIdGenerator(router)</code> — the <code>generate_unique_id_function</code> FastAPI
+uses to derive stable operation ids from a route's method and path, honoring the
+router's <code>operation_id_settings</code> and stripping the default prefix / default
+version segments.</p>
+<h3 id="routerecorder"><code>RouteRecorder</code><a class="headerlink" href="#routerecorder" title="Permanent link">&para;</a></h3>
+<p>Protocol with a single <code>record(*, path, type, methods, version, prefix,
+deployment, hidden)</code> method — the sink used by <code>RouterWrapper.recording</code> to
+enumerate a router's variants without mounting them.</p>
+<h3 id="routetype"><code>RouteType</code><a class="headerlink" href="#routetype" title="Permanent link">&para;</a></h3>
+<p><code>Literal["http", "websocket"]</code>.</p>
+<h3 id="routerwrappererror"><code>RouterWrapperError</code><a class="headerlink" href="#routerwrappererror" title="Permanent link">&para;</a></h3>
+<p>Raised when a route (or router) is missing a required <code>version</code> or <code>prefix</code>, or
+when a path list is empty.</p>
+<h3 id="add_redirect_routeapp-from_path-to_url"><code>add_redirect_route(app, from_path, to_url)</code><a class="headerlink" href="#add_redirect_routeapp-from_path-to_url" title="Permanent link">&para;</a></h3>
+<p>Register a <code>GET</code> route on <code>app</code> that returns a <code>RedirectResponse</code> to <code>to_url</code>.</p>
+<h2 id="path-variants-and-versioning">Path variants and versioning<a class="headerlink" href="#path-variants-and-versioning" title="Permanent link">&para;</a></h2>
+<h3 id="route"><code>Route</code><a class="headerlink" href="#route" title="Permanent link">&para;</a></h3>
+<p>Frozen dataclass describing a single path variant:
+<code>Route(path, version=None, prefix=None, deprecated=None, deployment=None, tags=None)</code>.
+Supports <code>route + RouteFlavor(...)</code> and <code>route.flavor(...)</code> to build a
+<code>RouteFlavors</code> collection.</p>
+<h3 id="routeflavor"><code>RouteFlavor</code><a class="headerlink" href="#routeflavor" title="Permanent link">&para;</a></h3>
+<p>Frozen, keyword-only dataclass carrying the same optional fields as <code>Route</code>,
+representing a modification of a base route.</p>
+<h3 id="routeflavors"><code>RouteFlavors</code><a class="headerlink" href="#routeflavors" title="Permanent link">&para;</a></h3>
+<p>Collection built from a root <code>Route</code> plus flavors. <code>.flavor(...)</code> appends a
+flavor (returning <code>self</code> for chaining); <code>.build()</code> returns the
+<code>[root, *flavors]</code> sequence.</p>
+<h3 id="versionspec-pathspec-prefixspec-deploymentspec"><code>VersionSpec</code> / <code>PathSpec</code> / <code>PrefixSpec</code> / <code>DeploymentSpec</code><a class="headerlink" href="#versionspec-pathspec-prefixspec-deploymentspec" title="Permanent link">&para;</a></h3>
+<p>Type aliases:</p>
+<ul>
+<li><code>VersionSpec = tuple[int | None, int | None] | int | bool | type[Disabled]</code></li>
+<li><code>PathSpec = str | Route | Sequence[str | Route] | RouteFlavors</code></li>
+<li><code>PrefixSpec = Sequence[str] | str | bool | type[Disabled]</code></li>
+<li><code>DeploymentSpec = str | bool</code></li>
+</ul>
+<h3 id="disabled"><code>Disabled</code><a class="headerlink" href="#disabled" title="Permanent link">&para;</a></h3>
+<p>Sentinel type used as a spec value to disable versioning or prefixing at a given
+level.</p>
+<h3 id="api_version_from_pathpath-int-none"><code>api_version_from_path(path) -&gt; int | None</code><a class="headerlink" href="#api_version_from_pathpath-int-none" title="Permanent link">&para;</a></h3>
+<p>Return the integer version embedded in a path (<code>"/api/v2/users"</code> → <code>2</code>), or
+<code>None</code>.</p>
+<h3 id="normalize_version_specspec-tupleint-none-int-none-none"><code>normalize_version_spec(spec) -&gt; tuple[int | None, int | None] | None</code><a class="headerlink" href="#normalize_version_specspec-tupleint-none-int-none-none" title="Permanent link">&para;</a></h3>
+<p>Normalize any <code>VersionSpec</code> into a <code>(low, high)</code> tuple (or <code>None</code>).</p>
+<h3 id="version_range_from_specversion_range-route_version-tupleversionrange-none-bool-bool"><code>version_range_from_spec(version_range, route_version) -&gt; tuple[VersionRange | None, bool, bool]</code><a class="headerlink" href="#version_range_from_specversion_range-route_version-tupleversionrange-none-bool-bool" title="Permanent link">&para;</a></h3>
+<p>Resolve the effective <code>(low, high)</code> range for a route, plus whether the lower and
+upper bounds were set explicitly.</p>
+<h3 id="versioned_routesroutes-defaults_version_range-route_version-version_deprecatednone"><code>versioned_routes(routes, defaults_version_range, route_version, version_deprecated=None)</code><a class="headerlink" href="#versioned_routesroutes-defaults_version_range-route_version-version_deprecatednone" title="Permanent link">&para;</a></h3>
+<p>Expand a sequence of <code>Route</code> into their per-version variants (prepending the
+<code>v{n}</code> segment and applying automatic deprecation).</p>
+<h3 id="prefixed_routesroutes-prefix"><code>prefixed_routes(routes, prefix)</code><a class="headerlink" href="#prefixed_routesroutes-prefix" title="Permanent link">&para;</a></h3>
+<p>Expand a sequence of <code>Route</code> across a prefix spec.</p>
+<h3 id="variants_routesroutes-defaults-router_prefix-router_version-router_deployment-prefix-version-deployment"><code>variants_routes(routes, defaults, router_prefix, router_version, router_deployment, prefix, version, deployment)</code><a class="headerlink" href="#variants_routesroutes-defaults-router_prefix-router_version-router_deployment-prefix-version-deployment" title="Permanent link">&para;</a></h3>
+<p>The top-level combinator: applies deployment, then versioning, then prefixing.
+<code>RouterWrapper</code> calls it internally.</p>
+<h2 id="routing-specs">Routing specs<a class="headerlink" href="#routing-specs" title="Permanent link">&para;</a></h2>
+<h3 id="routingspec"><code>RoutingSpec</code><a class="headerlink" href="#routingspec" title="Permanent link">&para;</a></h3>
+<p>Base callable predicate over a route's metadata (<code>path</code>, <code>methods</code>,
+<code>deprecated</code>, <code>response_model</code>, <code>response_class</code>, <code>openapi_extra</code>), returning
+<code>bool | None</code>.</p>
+<h3 id="leaf-specs">Leaf specs<a class="headerlink" href="#leaf-specs" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>Yes()</code> / <code>No()</code> — constant <code>True</code> / <code>False</code>.</li>
+<li><code>Unset()</code> — constant <code>None</code>.</li>
+<li><code>Methods(*methods)</code> — match on HTTP methods (<code>Methods.ALL</code> matches any).</li>
+<li><code>Paths(*patterns, startswith=False, endswith=False)</code> — match the path against
+  strings or <code>re.Pattern</code> objects.</li>
+<li><code>OpenapiExtra(key, value)</code> — match <code>openapi_extra[key] == value</code>.</li>
+<li><code>ApiVersion(version)</code> — <code>OpenapiExtra("x-api-version", version)</code>.</li>
+<li><code>Public()</code> — <code>OpenapiExtra("x-public", True)</code>.</li>
+</ul>
+<h3 id="combinators">Combinators<a class="headerlink" href="#combinators" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>And(*specs)</code> / <code>Or(*specs)</code> / <code>Not(spec)</code> — accept specs or booleans.</li>
+</ul>
+<h3 id="reference-specs">Reference specs<a class="headerlink" href="#reference-specs" title="Permanent link">&para;</a></h3>
+<p>Placeholders used inside a spec to compose across the route / router / default
+levels resolved by <code>resolve()</code> (see <a href="../specs/#composing-across-levels">Routing specs</a>):</p>
+<ul>
+<li><code>DefaultsReference()</code> / <code>RouterReference()</code> / <code>RouteReference()</code> — replaced by
+  the default / router / route spec respectively.</li>
+<li><code>ChildReference()</code> — replaced by the next level down.</li>
+<li><code>WithoutDefaults()</code> / <code>WithoutRouter()</code> — opt a spec out of the default /
+  router fallback.</li>
+</ul>
+<h3 id="resolveroute_specnone-router_specnone-default_specnone-pathnone-methodsnone-deprecatednone-response_modelnone-response_classjsonresponse-openapi_extranone-bool"><code>resolve(route_spec=None, router_spec=None, default_spec=None, *, path=None, methods=None, deprecated=None, response_model=None, response_class=JSONResponse, openapi_extra=None) -&gt; bool</code><a class="headerlink" href="#resolveroute_specnone-router_specnone-default_specnone-pathnone-methodsnone-deprecatednone-response_modelnone-response_classjsonresponse-openapi_extranone-bool" title="Permanent link">&para;</a></h3>
+<p>Evaluate specs with route/router/default precedence against the route metadata.</p>
+<h3 id="resolve_routesroutes-spec"><code>resolve_routes(routes, spec)</code><a class="headerlink" href="#resolve_routesroutes-spec" title="Permanent link">&para;</a></h3>
+<p>Lazily yield the routes of an iterable that match <code>spec</code> (using <code>Yes()</code> as the
+default).</p>
+<h2 id="openapi-documentation">OpenAPI documentation<a class="headerlink" href="#openapi-documentation" title="Permanent link">&para;</a></h2>
+<h3 id="add_doc_routes_for_appapp-openapi_specs_dirnone-categoriesdefault_categories-title_prefix-swagger_js_url-swagger_css_url-redoc_js_url-skip_add_routesfalse-disable_builtin_docstrue-openapispecs"><code>add_doc_routes_for_app(app, *, openapi_specs_dir=None, categories=DEFAULT_CATEGORIES, title_prefix="", swagger_js_url=..., swagger_css_url=..., redoc_js_url=..., skip_add_routes=False, disable_builtin_docs=True) -&gt; OpenapiSpecs</code><a class="headerlink" href="#add_doc_routes_for_appapp-openapi_specs_dirnone-categoriesdefault_categories-title_prefix-swagger_js_url-swagger_css_url-redoc_js_url-skip_add_routesfalse-disable_builtin_docstrue-openapispecs" title="Permanent link">&para;</a></h3>
+<p>High-level entry point: read the app's <code>router_wrapper_class.defaults</code> and mount
+the docs for every version and category under <code>{prefix}/docs</code>. By default it also
+removes FastAPI's built-in unversioned <code>/docs</code>, <code>/redoc</code> and <code>/openapi.json</code>
+(see <code>disable_default_docs</code>); pass <code>disable_builtin_docs=False</code> to keep them.</p>
+<h3 id="disable_default_docsapp-none"><code>disable_default_docs(app) -&gt; None</code><a class="headerlink" href="#disable_default_docsapp-none" title="Permanent link">&para;</a></h3>
+<p>Remove FastAPI's built-in <code>/docs</code>, <code>/redoc</code> and <code>/openapi.json</code> routes (and null
+the matching URLs) so they no longer shadow the per-version documentation and its
+root redirects.</p>
+<h3 id="add_doc_routes_for_all_versionsapp-openapi_provider-doc_prefix-prefix-default_versionnone-openapispecs"><code>add_doc_routes_for_all_versions(app, openapi_provider, doc_prefix="", prefix="", default_version=None, ...) -&gt; OpenapiSpecs</code><a class="headerlink" href="#add_doc_routes_for_all_versionsapp-openapi_provider-doc_prefix-prefix-default_versionnone-openapispecs" title="Permanent link">&para;</a></h3>
+<p>Mount every version's docs, plus an <code>/all</code> aggregate when a version range exists,
+and the root redirects.</p>
+<h3 id="add_doc_routes_for_versionapp-openapi_provider-doc_prefix-versionnone-default_versionfalse-skip_add_routesfalse-version_prefixnone-dictstr-dict"><code>add_doc_routes_for_version(app, openapi_provider, doc_prefix="", version=None, default_version=False, skip_add_routes=False, version_prefix=None, ...) -&gt; dict[str, dict]</code><a class="headerlink" href="#add_doc_routes_for_versionapp-openapi_provider-doc_prefix-versionnone-default_versionfalse-skip_add_routesfalse-version_prefixnone-dictstr-dict" title="Permanent link">&para;</a></h3>
+<p>Mount one version's category docs (and default-version redirects).</p>
+<h3 id="add_doc_routes_for_openapi_specapp-openapi_spec-prefix-redirect_prefixesnone-none"><code>add_doc_routes_for_openapi_spec(app, openapi_spec, prefix, redirect_prefixes=None, ...) -&gt; None</code><a class="headerlink" href="#add_doc_routes_for_openapi_specapp-openapi_spec-prefix-redirect_prefixesnone-none" title="Permanent link">&para;</a></h3>
+<p>Mount Swagger UI, ReDoc and <code>openapi.json</code> for a single, already-built spec dict.</p>
+<h3 id="openapicategory"><code>OpenapiCategory</code><a class="headerlink" href="#openapicategory" title="Permanent link">&para;</a></h3>
+<p>Frozen dataclass: <code>OpenapiCategory(name, title, spec_factory=identity, landing=False)</code>.
+<code>spec_factory</code> receives the per-version spec and returns the category's route
+filter; <code>landing</code> marks the category the version root redirects to.</p>
+<h3 id="openapispeccategory"><code>OpenapiSpecCategory</code><a class="headerlink" href="#openapispeccategory" title="Permanent link">&para;</a></h3>
+<p><code>StrEnum</code> with <code>internal</code> and <code>public</code> members (the default category names).</p>
+<h3 id="openapispecs"><code>OpenapiSpecs</code><a class="headerlink" href="#openapispecs" title="Permanent link">&para;</a></h3>
+<p>Frozen dataclass bundling the discovered <code>version_range</code> and the built <code>specs</code>
+mapping.</p>
+<h3 id="openapiprovider"><code>OpenapiProvider</code><a class="headerlink" href="#openapiprovider" title="Permanent link">&para;</a></h3>
+<p>Abstract base with <code>load_openapi(version, version_prefix, category, title_suffix)</code>
+and <code>get_version_range()</code>.</p>
+<h3 id="appopenapiproviderapp-routes-categoriesdefault_categories-title_prefix"><code>AppOpenapiProvider(app, routes, categories=DEFAULT_CATEGORIES, title_prefix="")</code><a class="headerlink" href="#appopenapiproviderapp-routes-categoriesdefault_categories-title_prefix" title="Permanent link">&para;</a></h3>
+<p>Computes each document on the fly from the live routes with FastAPI's
+<code>get_openapi</code>, filtered by the category spec and validated with
+<code>openapi-spec-validator</code>. Detects duplicate route unique ids.</p>
+<h3 id="localfilesopenapiproviderpath-categoriesdefault_categories"><code>LocalFilesOpenapiProvider(path, categories=DEFAULT_CATEGORIES)</code><a class="headerlink" href="#localfilesopenapiproviderpath-categoriesdefault_categories" title="Permanent link">&para;</a></h3>
+<p>Loads / writes pre-generated <code>*.openapi.json</code> files under <code>path</code>
+(<code>has_specs()</code>, <code>write_specs(openapi_specs)</code>, <code>build_filename(...)</code>).</p>
+<h3 id="openapi_provider_factoryapp-openapi_specs_dirnone-categoriesdefault_categories-title_prefix-openapiprovider"><code>openapi_provider_factory(app, openapi_specs_dir=None, categories=DEFAULT_CATEGORIES, title_prefix="") -&gt; OpenapiProvider</code><a class="headerlink" href="#openapi_provider_factoryapp-openapi_specs_dirnone-categoriesdefault_categories-title_prefix-openapiprovider" title="Permanent link">&para;</a></h3>
+<p>Return a <code>LocalFilesOpenapiProvider</code> when <code>openapi_specs_dir</code> already holds
+specs, otherwise an <code>AppOpenapiProvider</code>.</p>
+<h3 id="collect_app_routescontainer-listbaseroute"><code>collect_app_routes(container) -&gt; list[BaseRoute]</code><a class="headerlink" href="#collect_app_routescontainer-listbaseroute" title="Permanent link">&para;</a></h3>
+<p>Flatten every leaf route reachable from an app or router (descending into
+included routers and mounts).</p>
+<h3 id="get_openapi_staticapp-title-routes-dict"><code>get_openapi_static(app, title, routes) -&gt; dict</code><a class="headerlink" href="#get_openapi_staticapp-title-routes-dict" title="Permanent link">&para;</a></h3>
+<p>Build an OpenAPI 3.1.0 document for a fixed set of routes, inheriting the app's
+metadata.</p>
+<h2 id="docs-helpers">Docs helpers<a class="headerlink" href="#docs-helpers" title="Permanent link">&para;</a></h2>
+<h3 id="load_markdownfilenamedocmd-relative_tonone-str"><code>load_markdown(filename="doc.md", *, relative_to=None) -&gt; str</code><a class="headerlink" href="#load_markdownfilenamedocmd-relative_tonone-str" title="Permanent link">&para;</a></h3>
+<p>Read a markdown file, returning <code>""</code> when absent. Pass <code>relative_to=__file__</code>
+(the robust option) to resolve <code>filename</code> against that module's directory, or an
+absolute <code>filename</code> to read it directly; without <code>relative_to</code> the base
+directory is taken two frames up. Used by <code>get_csv_export</code> to attach long-form
+descriptions.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../openapi/" class="md-footer__link md-footer__link--prev" aria-label="Previous: OpenAPI documentation">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                OpenAPI documentation
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["announce.dismiss","content.action.edit","content.action.view","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.prefetch","navigation.path","navigation.sections","navigation.top","navigation.tracking","search.highlight"],"search":"../assets/javascripts/workers/search.b6b7e04f.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.ee611ef6.min.js"></script>
+      
+    
+  </body>
+</html>
