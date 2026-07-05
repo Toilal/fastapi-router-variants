@@ -538,17 +538,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#requirerolesprotocol-requirefeaturesprotocol" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        <code>RequireRolesProtocol</code> / <code>RequireFeaturesProtocol</code>
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#add_redirect_routeapp-from_path-to_url" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1122,17 +1111,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#requirerolesprotocol-requirefeaturesprotocol" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        <code>RequireRolesProtocol</code> / <code>RequireFeaturesProtocol</code>
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#add_redirect_routeapp-from_path-to_url" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1596,15 +1574,11 @@ variants. The wrapped router is exposed as <code>router.base</code>.</p>
 <ul>
 <li><code>defaults: RouterDefaultsProtocol</code> — class attribute holding the versioning /
   prefix / documentation defaults (defaults to <code>RouterDefaults()</code>).</li>
-<li><code>require_roles</code>, <code>require_features</code> — optional injectable static methods; when
-  set they add the matching dependencies and mention the roles/features in the
-  endpoint description.</li>
 <li>Route decorators: <code>get</code>, <code>post</code>, <code>put</code>, <code>patch</code>, <code>delete</code>, <code>api_route</code>,
   <code>websocket</code>, plus <code>get_csv_export</code> (a CSV-download <code>GET</code> with an example
   table). Each accepts the FastAPI route arguments plus <code>version</code>, <code>prefix</code>,
-  <code>deployment</code>, <code>public</code>, <code>require_roles</code>, <code>require_features</code>, <code>requires</code>,
-  <code>exceptions</code>, and description helpers (<code>summary</code>, <code>headline</code>, <code>points</code>, <code>doc</code>,
-  <code>deprecated</code>).</li>
+  <code>deployment</code>, <code>public</code>, <code>requires</code>, <code>exceptions</code>, and description helpers
+  (<code>summary</code>, <code>headline</code>, <code>points</code>, <code>doc</code>, <code>deprecated</code>).</li>
 <li><code>include_router(router, **kwargs)</code> — include an <code>APIRouter</code> or another
   <code>RouterWrapper</code>.</li>
 <li><code>is_public_route(path, ...) -&gt; bool</code> — resolve whether a route is public.</li>
@@ -1664,9 +1638,6 @@ enumerate a router's variants without mounting them.</p>
 <h3 id="routerwrappererror"><code>RouterWrapperError</code><a class="headerlink" href="#routerwrappererror" title="Permanent link">&para;</a></h3>
 <p>Raised when a route (or router) is missing a required <code>version</code> or <code>prefix</code>, or
 when a path list is empty.</p>
-<h3 id="requirerolesprotocol-requirefeaturesprotocol"><code>RequireRolesProtocol</code> / <code>RequireFeaturesProtocol</code><a class="headerlink" href="#requirerolesprotocol-requirefeaturesprotocol" title="Permanent link">&para;</a></h3>
-<p>Callable protocols for the optional <code>require_roles(roles)</code> /
-<code>require_features(*features)</code> injectable hooks.</p>
 <h3 id="add_redirect_routeapp-from_path-to_url"><code>add_redirect_route(app, from_path, to_url)</code><a class="headerlink" href="#add_redirect_routeapp-from_path-to_url" title="Permanent link">&para;</a></h3>
 <p>Register a <code>GET</code> route on <code>app</code> that returns a <code>RedirectResponse</code> to <code>to_url</code>.</p>
 <h2 id="path-variants-and-versioning">Path variants and versioning<a class="headerlink" href="#path-variants-and-versioning" title="Permanent link">&para;</a></h2>
