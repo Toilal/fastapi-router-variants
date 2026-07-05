@@ -13,6 +13,16 @@ if TYPE_CHECKING:
 
 p = inflect.engine()
 
+_METHOD_PRIORITY = ("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "TRACE")
+
+
+def _pick_method(methods: set[str] | None) -> str:
+    methods = methods or set()
+    for candidate in _METHOD_PRIORITY:
+        if candidate in methods:
+            return candidate
+    return sorted(methods)[0] if methods else ""
+
 
 @functools.cache
 def _cached_singular_noun(segment: str) -> str | Literal[False]:
@@ -131,6 +141,6 @@ class RouterUniqueIdGenerator:
 
         path_segments = [self._sanitize(x) for x in path_segments]
 
-        method = next(iter(route.methods or ())).lower()
+        method = _pick_method(route.methods).lower()
 
         return self._build_unique_id(method, path_segments)

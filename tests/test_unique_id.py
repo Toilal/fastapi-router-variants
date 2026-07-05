@@ -1,3 +1,6 @@
+import os
+import subprocess
+import sys
 from collections.abc import Iterable
 from dataclasses import dataclass
 
@@ -140,3 +143,42 @@ def test_generated_ids_are_unique(sample_router_type: type[RouterWrapper]) -> No
     ]
     assert unique_ids
     assert len(unique_ids) == len(set(unique_ids))
+
+
+@pytest.mark.parametrize("methods", [["GET", "POST"], ["POST", "GET"]])
+def test_multi_method_operation_id_is_order_independent(
+    sample_router_type: type[RouterWrapper], methods: list[str]
+) -> None:
+    router = sample_router_type(version=(1, 2))
+    generator = RouterUniqueIdGenerator(router)
+
+    route = APIRoute(
+        "/api/v2/things",
+        endpoint=lambda: None,
+        methods=methods,
+        openapi_extra={"x-path-prefix": "/api", "x-api-version": 2},
+    )
+
+    assert generator.generate_unique_id(route) == "getThings"
+
+
+def test_multi_method_operation_id_is_stable_across_hash_seeds() -> None:
+    program = (
+        "from fastapi.routing import APIRoute\n"
+        "from fastapi_router_variants.unique_id import _pick_method\n"
+        "route = APIRoute('/things', endpoint=lambda: None, "
+        "methods=['GET', 'POST', 'PUT', 'DELETE'])\n"
+        "print(_pick_method(route.methods))\n"
+    )
+    outputs = set()
+    for seed in ("0", "1", "2", "3"):
+        result = subprocess.run(
+            [sys.executable, "-c", program],
+            check=True,
+            capture_output=True,
+            text=True,
+            env={**os.environ, "PYTHONHASHSEED": seed},
+        )
+        outputs.add(result.stdout.strip())
+
+    assert outputs == {"GET"}
