@@ -97,6 +97,20 @@ class TestVersionedRoutes:
         result = versioned_routes([Route("/foo", version=False)], (1, 3), True)
         assert [(r.path, r.version) for r in result] == [("/foo", False)]
 
+    def test_route_level_closed_window_deprecates_top_under_open_outer(self) -> None:
+        result = versioned_routes(
+            [Route("/foo"), Route("/bar", version=(2, 3))], (1, 5), True
+        )
+        assert [(r.path, r.deprecated) for r in result] == [
+            ("/v1/foo", None),
+            ("/v2/foo", None),
+            ("/v3/foo", None),
+            ("/v4/foo", None),
+            ("/v5/foo", None),
+            ("/v2/bar", None),
+            ("/v3/bar", True),
+        ]
+
 
 class TestPrefixedRoutes:
     def test_single_prefix(self) -> None:

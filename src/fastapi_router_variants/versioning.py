@@ -248,8 +248,9 @@ def versioned_routes(
     for route in routes:
         if (version_range and route.version is True) or route.version is None:
             route_version_range = version_range
+            route_upper_version_set = upper_version_set
         else:
-            route_version_range, _, _ = version_range_from_spec(
+            route_version_range, _, route_upper_version_set = version_range_from_spec(
                 defaults_version_range, route.version
             )
 
@@ -266,7 +267,7 @@ def versioned_routes(
                 if (
                     version_deprecated is not None
                     and path_version <= version_deprecated
-                ) or (upper_version_set and path_version >= max_version):
+                ) or (route_upper_version_set and path_version >= max_version):
                     route_path_deprecated = True
 
             result.append(
