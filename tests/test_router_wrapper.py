@@ -399,6 +399,25 @@ class TestRegistrationAndDispatch:
         assert "/child" in paths
 
 
+class TestDefaultsDeployment:
+    def test_defaults_deployment_is_applied_as_fallback(self) -> None:
+        @dataclass(frozen=True)
+        class DeployDefaults(RouterDefaults):
+            version = False
+            deployment = "prod"
+
+        RouterWrapper.defaults = DeployDefaults()
+
+        router = RouterWrapper()
+
+        @router.get("/thing")
+        def thing() -> None: ...
+
+        route = next(r for r in router.base.routes if isinstance(r, APIRoute))
+        assert route.openapi_extra is not None
+        assert route.openapi_extra.get("x-deployment") == "prod"
+
+
 class MyError(Exception):
     pass
 

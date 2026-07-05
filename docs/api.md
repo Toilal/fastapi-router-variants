@@ -182,6 +182,17 @@ Base callable predicate over a route's metadata (`path`, `methods`,
 
 - `And(*specs)` / `Or(*specs)` / `Not(spec)` — accept specs or booleans.
 
+### Reference specs
+
+Placeholders used inside a spec to compose across the route / router / default
+levels resolved by `resolve()` (see [Routing specs](specs.md#composing-across-levels)):
+
+- `DefaultsReference()` / `RouterReference()` / `RouteReference()` — replaced by
+  the default / router / route spec respectively.
+- `ChildReference()` — replaced by the next level down.
+- `WithoutDefaults()` / `WithoutRouter()` — opt a spec out of the default /
+  router fallback.
+
 ### `resolve(route_spec=None, router_spec=None, default_spec=None, *, path=None, methods=None, deprecated=None, response_model=None, response_class=JSONResponse, openapi_extra=None) -> bool`
 
 Evaluate specs with route/router/default precedence against the route metadata.
@@ -193,10 +204,18 @@ default).
 
 ## OpenAPI documentation
 
-### `add_doc_routes_for_app(app, *, openapi_specs_dir=None, categories=DEFAULT_CATEGORIES, title_prefix="", swagger_js_url=..., swagger_css_url=..., redoc_js_url=..., skip_add_routes=False) -> OpenapiSpecs`
+### `add_doc_routes_for_app(app, *, openapi_specs_dir=None, categories=DEFAULT_CATEGORIES, title_prefix="", swagger_js_url=..., swagger_css_url=..., redoc_js_url=..., skip_add_routes=False, disable_builtin_docs=True) -> OpenapiSpecs`
 
 High-level entry point: read the app's `router_wrapper_class.defaults` and mount
-the docs for every version and category under `{prefix}/docs`.
+the docs for every version and category under `{prefix}/docs`. By default it also
+removes FastAPI's built-in unversioned `/docs`, `/redoc` and `/openapi.json`
+(see `disable_default_docs`); pass `disable_builtin_docs=False` to keep them.
+
+### `disable_default_docs(app) -> None`
+
+Remove FastAPI's built-in `/docs`, `/redoc` and `/openapi.json` routes (and null
+the matching URLs) so they no longer shadow the per-version documentation and its
+root redirects.
 
 ### `add_doc_routes_for_all_versions(app, openapi_provider, doc_prefix="", prefix="", default_version=None, ...) -> OpenapiSpecs`
 
@@ -259,8 +278,10 @@ metadata.
 
 ## Docs helpers
 
-### `load_markdown() -> str`
+### `load_markdown(filename="doc.md", *, relative_to=None) -> str`
 
-Read a `doc.md` file sitting next to the caller's caller module (resolved two
-frames up), returning `""` when absent. Used by `get_csv_export` to attach
-long-form descriptions.
+Read a markdown file, returning `""` when absent. Pass `relative_to=__file__`
+(the robust option) to resolve `filename` against that module's directory, or an
+absolute `filename` to read it directly; without `relative_to` the base
+directory is taken two frames up. Used by `get_csv_export` to attach long-form
+descriptions.

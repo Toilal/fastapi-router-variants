@@ -62,6 +62,11 @@ The default version (`version_default`) also gets top-level shortcuts
 redirects (`/`, `/docs`, `/swagger-ui`, `/redoc`, `/openapi.json`) point into the
 docs tree.
 
+For those root redirects to win, `add_doc_routes_for_app` removes FastAPI's
+built-in unversioned `/docs`, `/redoc` and `/openapi.json` by default (they would
+otherwise shadow them). Pass `disable_builtin_docs=False` to keep the built-in
+docs instead.
+
 ## Categories
 
 A category is one filtered OpenAPI document. The two defaults are `internal`

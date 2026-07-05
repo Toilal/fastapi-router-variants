@@ -111,11 +111,19 @@ class TestVersionedRoutes:
             ("/v3/bar", True),
         ]
 
+    def test_root_path_versions_keep_leading_slash(self) -> None:
+        result = versioned_routes([Route("")], (1, 2), True)
+        assert [r.path for r in result] == ["/v1", "/v2"]
+
 
 class TestPrefixedRoutes:
     def test_single_prefix(self) -> None:
         result = prefixed_routes([Route("/foo")], "/api")
         assert [(r.path, r.prefix) for r in result] == [("/api/foo", "/api")]
+
+    def test_root_path_prefix_keeps_leading_slash(self) -> None:
+        result = prefixed_routes([Route("")], "/api")
+        assert [r.path for r in result] == ["/api"]
 
     def test_multiple_prefixes(self) -> None:
         result = prefixed_routes([Route("/foo")], ("/api", "/admin"))

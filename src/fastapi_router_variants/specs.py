@@ -13,7 +13,7 @@ class RoutingSpec:
         *,
         path: str | None = None,
         methods: list[str] | None = None,
-        deprecated: bool | None = False,
+        deprecated: bool | None = None,
         response_model: Any = None,
         response_class: type[Response] | None = None,
         openapi_extra: dict[str, Any] | None = None,
@@ -152,7 +152,7 @@ class Public(OpenapiExtra):
 
 class DefaultsReference(RoutingSpec):
     def __call__(self, *args: Any, **kwargs: Any) -> bool | None:
-        raise NotImplementedError("Default spec should be replaced.")
+        raise NotImplementedError("DefaultsReference spec should be replaced.")
 
 
 class RouterReference(RoutingSpec):
@@ -162,7 +162,7 @@ class RouterReference(RoutingSpec):
 
 class ChildReference(RoutingSpec):
     def __call__(self, *args: Any, **kwargs: Any) -> bool | None:
-        raise NotImplementedError("RouterReference spec should be replaced.")
+        raise NotImplementedError("ChildReference spec should be replaced.")
 
 
 class RouteReference(RoutingSpec):
@@ -172,12 +172,12 @@ class RouteReference(RoutingSpec):
 
 class WithoutDefaults(RoutingSpec):
     def __call__(self, *args: Any, **kwargs: Any) -> bool | None:
-        raise NotImplementedError("Router spec should be replaced.")
+        raise NotImplementedError("WithoutDefaults spec should be replaced.")
 
 
 class WithoutRouter(RoutingSpec):
     def __call__(self, *args: Any, **kwargs: Any) -> bool | None:
-        raise NotImplementedError("Router spec should be replaced.")
+        raise NotImplementedError("WithoutRouter spec should be replaced.")
 
 
 def _without(
@@ -261,57 +261,45 @@ class UnsetResultError(Exception):
         super().__init__("Resolve result is unset. Use Yes() or No() as default spec.")
 
 
-def resolve(
-    route_spec: RoutingSpec | bool | None = None,
-    router_spec: RoutingSpec | bool | None = None,
-    default_spec: RoutingSpec | bool | None = None,
-    *,
-    path: str | None = None,
-    methods: list[str] | None = None,
-    deprecated: bool | None = None,
-    response_model: Any = None,
-    response_class: type[Response] = JSONResponse,
-    openapi_extra: dict[str, Any] | None = None,
-) -> bool:
+def _strip_marker(
+    spec: RoutingSpec | bool | None, marker: type[RoutingSpec]
+) -> tuple[RoutingSpec | bool | None, bool]:
+    stripped = _without(spec, marker)
+    if stripped is None:
+        return spec, False
+    return (None if isinstance(stripped, Unset) else stripped), True
+
+
+def _strip_level_markers(
+    route_spec: RoutingSpec | bool | None,
+    router_spec: RoutingSpec | bool | None,
+) -> tuple[RoutingSpec | bool | None, RoutingSpec | bool | None, bool, bool]:
     without_defaults = False
     without_router = False
 
     if route_spec is not None:
-        route_without_defaults = _without(route_spec, WithoutDefaults)
-        if route_without_defaults is not None:
-            without_defaults = True
-            route_spec = (
-                None
-                if isinstance(route_without_defaults, Unset)
-                else route_without_defaults
-            )
-
-        route_without_router = _without(route_spec, WithoutRouter)
-        if route_without_router is not None:
-            without_router = True
-            route_spec = (
-                None
-                if isinstance(route_without_router, Unset)
-                else route_without_router
-            )
+        route_spec, hit = _strip_marker(route_spec, WithoutDefaults)
+        without_defaults |= hit
+        route_spec, hit = _strip_marker(route_spec, WithoutRouter)
+        without_router |= hit
 
     if router_spec is not None:
-        router_without_defaults = _without(router_spec, WithoutDefaults)
-        if router_without_defaults is not None:
-            without_defaults = True
-            router_spec = (
-                None
-                if isinstance(router_without_defaults, Unset)
-                else router_without_defaults
-            )
-        router_without_router = _without(router_spec, WithoutRouter)
-        if router_without_router is not None:
-            router_spec = (
-                None
-                if isinstance(router_without_router, Unset)
-                else router_without_router
-            )
+        router_spec, hit = _strip_marker(router_spec, WithoutDefaults)
+        without_defaults |= hit
+        # A WithoutRouter carried by the router spec strips itself but, unlike on
+        # the route spec, does not disable the router level.
+        router_spec, _ = _strip_marker(router_spec, WithoutRouter)
 
+    return route_spec, router_spec, without_defaults, without_router
+
+
+def _select_entrypoint_spec(
+    route_spec: RoutingSpec | bool | None,
+    router_spec: RoutingSpec | bool | None,
+    default_spec: RoutingSpec | bool | None,
+    without_defaults: bool,
+    without_router: bool,
+) -> RoutingSpec | bool | None:
     is_router_entrypoint = (
         not _none_or_unset(_without(router_spec, RouteReference))
         or not _none_or_unset(_without(router_spec, ChildReference))
@@ -327,7 +315,6 @@ def resolve(
 
     if is_default_entrypoint:
         spec = default_spec
-
         replaced_spec = _replace(
             spec,
             ChildReference,
@@ -339,24 +326,43 @@ def resolve(
                 else None
             ),
         )
-        if replaced_spec is not None:
-            spec = replaced_spec
-    elif is_router_entrypoint:
-        spec = router_spec
+        return replaced_spec if replaced_spec is not None else spec
 
+    if is_router_entrypoint:
+        spec = router_spec
         replaced_spec = _replace(
             spec, ChildReference, RouteReference() if route_spec else None
         )
-        if replaced_spec is not None:
-            spec = replaced_spec
-    elif not _none_or_unset(route_spec):
-        spec = route_spec
-    elif not _none_or_unset(router_spec) and not without_router:
-        spec = router_spec
-    elif not without_defaults:
-        spec = default_spec
-    else:
-        spec = Unset()
+        return replaced_spec if replaced_spec is not None else spec
+
+    if not _none_or_unset(route_spec):
+        return route_spec
+    if not _none_or_unset(router_spec) and not without_router:
+        return router_spec
+    if not without_defaults:
+        return default_spec
+    return Unset()
+
+
+def resolve(
+    route_spec: RoutingSpec | bool | None = None,
+    router_spec: RoutingSpec | bool | None = None,
+    default_spec: RoutingSpec | bool | None = None,
+    *,
+    path: str | None = None,
+    methods: list[str] | None = None,
+    deprecated: bool | None = None,
+    response_model: Any = None,
+    response_class: type[Response] = JSONResponse,
+    openapi_extra: dict[str, Any] | None = None,
+) -> bool:
+    route_spec, router_spec, without_defaults, without_router = _strip_level_markers(
+        route_spec, router_spec
+    )
+
+    spec = _select_entrypoint_spec(
+        route_spec, router_spec, default_spec, without_defaults, without_router
+    )
 
     replaced_spec = _replace(spec, DefaultsReference, default_spec)
     if replaced_spec is not None:

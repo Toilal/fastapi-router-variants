@@ -56,10 +56,35 @@ def collect_app_routes(container: Any) -> list[BaseRoute]:
     return collected
 
 
+INTERNAL_OPENAPI_EXTENSIONS = (
+    "x-api-version",
+    "x-path-prefix",
+    "x-deployment",
+    "x-public",
+)
+"""Extensions the wrapper injects into routes for filtering, never for publishing.
+
+They are read from ``route.openapi_extra`` at filter time (``ApiVersion``,
+``Public``, …) but must be removed from the emitted operations so they do not
+leak into the served OpenAPI document.
+"""
+
+
+def _strip_internal_extensions(openapi: dict[str, Any]) -> dict[str, Any]:
+    for path_item in openapi.get("paths", {}).values():
+        if not isinstance(path_item, dict):
+            continue
+        for operation in path_item.values():
+            if isinstance(operation, dict):
+                for key in INTERNAL_OPENAPI_EXTENSIONS:
+                    operation.pop(key, None)
+    return openapi
+
+
 def get_openapi_static(
     app: FastAPI, title: str, routes: Sequence[BaseRoute]
 ) -> dict[str, Any]:
-    return get_openapi(
+    openapi = get_openapi(
         title=title,
         routes=routes,
         version="3.1.0",
@@ -74,6 +99,7 @@ def get_openapi_static(
         tags=app.openapi_tags,
         separate_input_output_schemas=app.separate_input_output_schemas,
     )
+    return _strip_internal_extensions(openapi)
 
 
 class OpenapiSpecCategory(StrEnum):
@@ -133,6 +159,15 @@ class OpenapiProvider(ABC):
     @abstractmethod
     def get_version_range(self) -> tuple[int, int] | None: ...
 
+    def get_versions(self) -> set[int] | None:
+        """Return the exact set of versions that carry routes, or ``None``.
+
+        ``None`` means the provider only knows the ``(min, max)`` bounds, so
+        callers fall back to a dense range. Providers that can enumerate the
+        actual versions override this to skip empty ones.
+        """
+        return None
+
 
 class LocalFilesOpenapiProvider(OpenapiProvider):
     filename_suffix: ClassVar[str] = ".openapi.json"
@@ -191,7 +226,13 @@ class LocalFilesOpenapiProvider(OpenapiProvider):
             if data is None:
                 return None
 
-            return cast("tuple[int, int]", tuple(data))
+            if not isinstance(data, list) or len(data) != 2:
+                raise ValueError(
+                    f"Malformed version range in {self.version_range_file}: "
+                    f"expected a 2-element list, got {data!r}"
+                )
+
+            return (data[0], data[1])
 
 
 class AppOpenapiProvider(OpenapiProvider):
@@ -244,10 +285,8 @@ class AppOpenapiProvider(OpenapiProvider):
 
         return openapi
 
-    def get_version_range(self) -> tuple[int, int] | None:
-        min_version = None
-        max_version = None
-
+    def get_versions(self) -> set[int]:
+        versions: set[int] = set()
         for route in self.routes:
             if isinstance(route, APIRoute):
                 api_version = (
@@ -256,14 +295,14 @@ class AppOpenapiProvider(OpenapiProvider):
                     else None
                 )
                 if api_version is not None:
-                    if min_version is None or api_version < min_version:
-                        min_version = api_version
-                    if max_version is None or api_version > max_version:
-                        max_version = api_version
+                    versions.add(api_version)
+        return versions
 
-        if min_version is None or max_version is None:
+    def get_version_range(self) -> tuple[int, int] | None:
+        versions = self.get_versions()
+        if not versions:
             return None
-        return min_version, max_version
+        return min(versions), max(versions)
 
 
 def openapi_provider_factory(

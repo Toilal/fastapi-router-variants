@@ -15,10 +15,14 @@ from fastapi_router_variants import (
     RouterDefaults,
     RouterWrapper,
     add_doc_routes_for_app,
+    add_redirect_route,
     collect_app_routes,
     openapi_provider_factory,
 )
-from fastapi_router_variants.openapi import DEFAULT_CATEGORIES
+from fastapi_router_variants.openapi import (
+    DEFAULT_CATEGORIES,
+    INTERNAL_OPENAPI_EXTENSIONS,
+)
 
 INTERNAL = DEFAULT_CATEGORIES[0]
 PUBLIC = DEFAULT_CATEGORIES[1]
@@ -91,6 +95,48 @@ class TestAppOpenapiProvider:
         assert "/api/v1/internal" in paths
         assert "/api/v2/internal" not in paths
 
+    def test_internal_extensions_stripped_from_served_spec(self) -> None:
+        app, _ = _build_app()
+        provider = AppOpenapiProvider(app, collect_app_routes(app))
+
+        spec = provider.load_openapi(1, "/v1", INTERNAL, " v1")
+        operation = spec["paths"]["/api/v1/public"]["get"]
+
+        for extension in INTERNAL_OPENAPI_EXTENSIONS:
+            assert extension not in operation
+
+    def test_get_versions_reports_only_present_versions(self) -> None:
+        @dataclass(frozen=True)
+        class SparseDefaults(RouterDefaults):
+            prefix = "/api"
+            version = True
+            version_range = (1, 3)
+            version_default = 1
+
+        class SparseRouter(RouterWrapper):
+            defaults = SparseDefaults()
+
+            @classmethod
+            def reset_defaults(cls) -> None:
+                cls.defaults = SparseDefaults()
+
+        router = SparseRouter()
+
+        @router.get("/a", version=(1, 1))
+        def a_ep() -> dict[str, str]:
+            return {}
+
+        @router.get("/b", version=(3, 3))
+        def b_ep() -> dict[str, str]:
+            return {}
+
+        app = FastAPI()
+        app.include_router(router.base)
+        provider = AppOpenapiProvider(app, collect_app_routes(app))
+
+        assert provider.get_versions() == {1, 3}
+        assert provider.get_version_range() == (1, 3)
+
     def test_custom_category(self) -> None:
         app, router_type = _build_app()
         router = router_type(version=True)
@@ -156,6 +202,63 @@ class TestDocRoutesMounting:
         response = client.get("/api/docs")
         assert response.status_code == 200
 
+    @staticmethod
+    def _build_sparse_app(default_version: int) -> FastAPI:
+        @dataclass(frozen=True)
+        class SparseDefaults(RouterDefaults):
+            prefix = "/api"
+            version = True
+            version_range = (1, 3)
+            version_default = default_version
+
+        class SparseRouter(RouterWrapper):
+            defaults = SparseDefaults()
+
+            @classmethod
+            def reset_defaults(cls) -> None:
+                cls.defaults = SparseDefaults()
+
+        router = SparseRouter()
+
+        @router.get("/a", version=(1, 1))
+        def a_ep() -> dict[str, str]:
+            return {}
+
+        @router.get("/b", version=(3, 3))
+        def b_ep() -> dict[str, str]:
+            return {}
+
+        app = FastAPI()
+        app.include_router(router.base)
+        app.router_wrapper_class = SparseRouter  # type: ignore[attr-defined]
+        return app
+
+    def test_absent_versions_get_no_doc_routes(self) -> None:
+        app = self._build_sparse_app(default_version=1)
+        add_doc_routes_for_app(app)
+        client = TestClient(app)
+
+        assert client.get("/api/docs/v1/public/openapi.json").status_code == 200
+        assert client.get("/api/docs/v3/public/openapi.json").status_code == 200
+        assert client.get("/api/docs/v2/public/openapi.json").status_code == 404
+        assert client.get("/api/docs").status_code == 200
+
+    def test_default_version_in_gap_still_serves_landing(self) -> None:
+        app = self._build_sparse_app(default_version=2)
+        add_doc_routes_for_app(app)
+        client = TestClient(app)
+
+        # v2 has no routes but is the default, so its landing must resolve.
+        assert client.get("/api/docs").status_code == 200
+        assert client.get("/api/docs/v2/public/openapi.json").status_code == 200
+
+    def test_redirect_routes_are_hidden_from_schema(self) -> None:
+        app = FastAPI()
+        add_redirect_route(app, "/from", "/to")
+
+        route = next(r for r in app.routes if getattr(r, "path", None) == "/from")
+        assert route.include_in_schema is False
+
     def test_configurable_cdn_urls(self) -> None:
         app, _ = _build_app()
         add_doc_routes_for_app(
@@ -173,6 +276,67 @@ class TestDocRoutesMounting:
             "https://example.test/redoc.js"
             in client.get("/api/docs/v1/public/redoc").text
         )
+
+
+class TestDocRedirects:
+    @pytest.mark.parametrize(
+        ("source", "target"),
+        [
+            ("/api/docs", "/api/docs/v1"),
+            ("/api/docs/v1", "/api/docs/v1/public"),
+            ("/api/docs/v2", "/api/docs/v2/public"),
+            ("/api/docs/public", "/api/docs/v1/public"),
+            ("/api/docs/swagger-ui", "/api/docs/v1/public/swagger-ui"),
+            ("/api/docs/redoc", "/api/docs/v1/public/redoc"),
+            ("/api/docs/openapi.json", "/api/docs/v1/public/openapi.json"),
+            ("/api", "/api/docs"),
+            ("/", "/api/docs"),
+            ("/docs", "/api/docs"),
+            ("/openapi.json", "/api/docs/openapi.json"),
+            ("/redoc", "/api/docs/redoc"),
+            ("/swagger-ui", "/api/docs/swagger-ui"),
+        ],
+    )
+    def test_redirect_targets(self, source: str, target: str) -> None:
+        app, _ = _build_app()
+        add_doc_routes_for_app(app)
+        client = TestClient(app, follow_redirects=False)
+
+        response = client.get(source)
+        assert response.status_code == 307
+        assert response.headers["location"] == target
+
+    def test_root_redirect_chain_reaches_swagger(self) -> None:
+        app, _ = _build_app()
+        add_doc_routes_for_app(app)
+        client = TestClient(app)
+
+        response = client.get("/api/docs")
+        assert response.status_code == 200
+        assert str(response.url).endswith("/api/docs/v1/public/swagger-ui")
+        assert "swagger-ui" in response.text.lower()
+
+    def test_builtin_docs_disabled_by_default(self) -> None:
+        app, _ = _build_app()
+        add_doc_routes_for_app(app)
+
+        assert app.openapi_url is None
+        assert app.docs_url is None
+        assert app.redoc_url is None
+
+        client = TestClient(app, follow_redirects=False)
+        assert client.get("/docs").status_code == 307
+        assert client.get("/openapi.json").status_code == 307
+
+    def test_builtin_docs_kept_when_opted_out(self) -> None:
+        app, _ = _build_app()
+        add_doc_routes_for_app(app, disable_builtin_docs=False)
+
+        assert app.openapi_url == "/openapi.json"
+
+        client = TestClient(app, follow_redirects=False)
+        assert client.get("/docs").status_code == 200
+        assert client.get("/openapi.json").status_code == 200
 
 
 class TestLocalFilesProvider:
@@ -206,3 +370,16 @@ class TestLocalFilesProvider:
         app, _ = _build_app()
         provider = openapi_provider_factory(app, tmp_path)
         assert isinstance(provider, AppOpenapiProvider)
+
+    def test_get_versions_is_none_without_enumeration(self, tmp_path: Path) -> None:
+        assert LocalFilesOpenapiProvider(tmp_path).get_versions() is None
+
+    def test_malformed_version_range_raises(self, tmp_path: Path) -> None:
+        provider = LocalFilesOpenapiProvider(tmp_path)
+        provider.write_specs(
+            OpenapiSpecs(version_range=(1, 2), specs={"x.openapi.json": {}})
+        )
+        provider.version_range_file.write_text("[1, 2, 3]")
+
+        with pytest.raises(ValueError, match="Malformed version range"):
+            provider.get_version_range()

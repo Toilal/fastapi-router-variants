@@ -53,7 +53,7 @@ CSVExample = Sequence[tuple[str, tuple[str, ...]]]
 def _csv_example_html_table(csv_example: CSVExample) -> str:
     headers = [col for col, _ in csv_example]
 
-    num_rows = len(csv_example[0][1])
+    num_rows = min(len(values) for _, values in csv_example)
     rows = [
         [
             str(col_vals[1][i]) if col_vals[1][i] != "" else "—"
@@ -1002,6 +1002,8 @@ class RouterWrapper:
             public = self.public
         if deployment is None:
             deployment = self.deployment
+        if deployment is None:
+            deployment = self.defaults.deployment
 
         if version is None and self.version is None and self.defaults.version is True:
             raise RouterWrapperError("version must be defined on route or router")
@@ -1057,6 +1059,6 @@ class RouterWrapper:
 
 
 def add_redirect_route(app: FastAPI, from_path: str, to_url: str | URL) -> None:
-    @app.get(from_path)
+    @app.get(from_path, include_in_schema=False)
     def redirect() -> RedirectResponse:
         return RedirectResponse(url=to_url)
