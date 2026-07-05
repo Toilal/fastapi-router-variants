@@ -152,7 +152,7 @@ class Public(OpenapiExtra):
 
 class DefaultsReference(RoutingSpec):
     def __call__(self, *args: Any, **kwargs: Any) -> bool | None:
-        raise NotImplementedError("Default spec should be replaced.")
+        raise NotImplementedError("DefaultsReference spec should be replaced.")
 
 
 class RouterReference(RoutingSpec):
@@ -162,7 +162,7 @@ class RouterReference(RoutingSpec):
 
 class ChildReference(RoutingSpec):
     def __call__(self, *args: Any, **kwargs: Any) -> bool | None:
-        raise NotImplementedError("RouterReference spec should be replaced.")
+        raise NotImplementedError("ChildReference spec should be replaced.")
 
 
 class RouteReference(RoutingSpec):
@@ -172,12 +172,12 @@ class RouteReference(RoutingSpec):
 
 class WithoutDefaults(RoutingSpec):
     def __call__(self, *args: Any, **kwargs: Any) -> bool | None:
-        raise NotImplementedError("Router spec should be replaced.")
+        raise NotImplementedError("WithoutDefaults spec should be replaced.")
 
 
 class WithoutRouter(RoutingSpec):
     def __call__(self, *args: Any, **kwargs: Any) -> bool | None:
-        raise NotImplementedError("Router spec should be replaced.")
+        raise NotImplementedError("WithoutRouter spec should be replaced.")
 
 
 def _without(
