@@ -1,8 +1,6 @@
 """Path variants, API versioning and per-version OpenAPI docs for FastAPI."""
 
 from fastapi_router_variants.definition import (
-    RequireFeaturesProtocol,
-    RequireRolesProtocol,
     RouterDefaults,
     RouterDefaultsProtocol,
     RouteRecorder,
@@ -87,8 +85,6 @@ __all__ = [
     "Paths",
     "PrefixSpec",
     "Public",
-    "RequireFeaturesProtocol",
-    "RequireRolesProtocol",
     "Route",
     "RouteFlavor",
     "RouteFlavors",

@@ -15,15 +15,11 @@ variants. The wrapped router is exposed as `router.base`.
 
 - `defaults: RouterDefaultsProtocol` — class attribute holding the versioning /
   prefix / documentation defaults (defaults to `RouterDefaults()`).
-- `require_roles`, `require_features` — optional injectable static methods; when
-  set they add the matching dependencies and mention the roles/features in the
-  endpoint description.
 - Route decorators: `get`, `post`, `put`, `patch`, `delete`, `api_route`,
   `websocket`, plus `get_csv_export` (a CSV-download `GET` with an example
   table). Each accepts the FastAPI route arguments plus `version`, `prefix`,
-  `deployment`, `public`, `require_roles`, `require_features`, `requires`,
-  `exceptions`, and description helpers (`summary`, `headline`, `points`, `doc`,
-  `deprecated`).
+  `deployment`, `public`, `requires`, `exceptions`, and description helpers
+  (`summary`, `headline`, `points`, `doc`, `deprecated`).
 - `include_router(router, **kwargs)` — include an `APIRouter` or another
   `RouterWrapper`.
 - `is_public_route(path, ...) -> bool` — resolve whether a route is public.
@@ -96,11 +92,6 @@ enumerate a router's variants without mounting them.
 
 Raised when a route (or router) is missing a required `version` or `prefix`, or
 when a path list is empty.
-
-### `RequireRolesProtocol` / `RequireFeaturesProtocol`
-
-Callable protocols for the optional `require_roles(roles)` /
-`require_features(*features)` injectable hooks.
 
 ### `add_redirect_route(app, from_path, to_url)`
 

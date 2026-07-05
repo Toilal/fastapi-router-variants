@@ -143,14 +143,6 @@ class RouteRecorder(Protocol):
 class RouterWrapperError(Exception): ...
 
 
-class RequireRolesProtocol(Protocol):
-    def __call__(self, roles: set[Any]) -> Any: ...
-
-
-class RequireFeaturesProtocol(Protocol):
-    def __call__(self, *features: Any) -> Any: ...
-
-
 @dataclass(frozen=True, kw_only=True)
 class RouterOperationIdSettings:
     segment_aliases: dict[str, str] = field(default_factory=dict)
@@ -220,8 +212,6 @@ class DisabledDefaults(RouterDefaults):
 
 class RouterWrapper:
     defaults: RouterDefaultsProtocol = RouterDefaults()
-    require_roles: RequireRolesProtocol | None = None
-    require_features: RequireFeaturesProtocol | None = None
 
     _route_recorder: ClassVar[RouteRecorder | None] = None
 
@@ -410,25 +400,12 @@ class RouterWrapper:
         version: VersionSpec | None = None,
         deployment: DeploymentSpec | None = None,
         public: bool | RoutingSpec | None = None,
-        require_roles: set[Any] | None = None,
-        require_features: set[Any] | None = None,
         requires: Sequence[Any] | None = None,
     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
         def decorator_factory(
             route_path: Route,
         ) -> Callable[[Callable[..., Any]], Any]:
             def decorator(handler: Callable[..., Any]) -> Any:
-                require_roles_http_dep: Any = (
-                    self.require_roles(require_roles)
-                    if require_roles and self.require_roles
-                    else None
-                )
-                require_features_http_dep: Any = (
-                    self.require_features(*require_features)
-                    if require_features and self.require_features
-                    else None
-                )
-
                 @wraps(handler)
                 def wrapper() -> Any:
                     recorder = self._route_recorder
@@ -447,17 +424,7 @@ class RouterWrapper:
                     api_route = self.base.websocket(
                         route_path.path,
                         dependencies=(
-                            (
-                                [Depends(require_roles_http_dep)]
-                                if require_roles_http_dep
-                                else []
-                            )
-                            + (
-                                [Depends(require_features_http_dep)]
-                                if require_features_http_dep
-                                else []
-                            )
-                            + ([Depends(r) for r in (requires if requires else [])])
+                            ([Depends(r) for r in (requires if requires else [])])
                             + (
                                 [
                                     Depends(r)
@@ -515,8 +482,6 @@ class RouterWrapper:
         public: bool | RoutingSpec | None = None,
         response_model: Any = Default(None),
         exceptions: set[Any] | None = None,
-        require_roles: set[Any] | None = None,
-        require_features: set[Any] | None = None,
         requires: Sequence[Any] | None = None,
         status_code: int | None = None,
         responses: dict[int | str, dict[str, Any]] | None = None,
@@ -588,17 +553,6 @@ class RouterWrapper:
                 path_openapi_extra["x-deployment"] = deployment
 
             def decorator(handler: Callable[..., Any]) -> Any:
-                require_roles_http_dep: Any = (
-                    self.require_roles(require_roles)
-                    if require_roles and self.require_roles
-                    else None
-                )
-                require_features_http_dep: Any = (
-                    self.require_features(*require_features)
-                    if require_features and self.require_features
-                    else None
-                )
-
                 http_exceptions: set[Any] = set(exceptions) if exceptions else set()
 
                 if self.defaults.autodoc_http_errors:
@@ -606,15 +560,6 @@ class RouterWrapper:
                     scanner = self.defaults.exception_scanner
 
                     http_exceptions |= _find_param_http_exceptions(handler, error_base)
-
-                    if require_roles_http_dep:
-                        http_exceptions |= _find_http_exceptions(
-                            require_roles_http_dep, error_base
-                        )
-                    if require_features_http_dep:
-                        http_exceptions |= _find_http_exceptions(
-                            require_features_http_dep, error_base
-                        )
 
                     if requires:
                         for r in requires:
@@ -644,16 +589,6 @@ class RouterWrapper:
                     + ("\n".join(f"- {point}" for point in points) if points else "")
                     + ("\n\n" if (points or headline) and doc else "")
                     + (doc if doc else "")
-                    + (
-                        f"\n\nFeature needed: {','.join(require_features)}"
-                        if require_features
-                        else ""
-                    )
-                    + (
-                        f"\n\nRole needed: {', '.join(require_roles)}"
-                        if require_roles
-                        else ""
-                    )
                 )
 
                 @wraps(handler)
@@ -683,17 +618,7 @@ class RouterWrapper:
                         methods=methods,
                         tags=route_path.tags,
                         dependencies=(
-                            (
-                                [Depends(require_roles_http_dep)]
-                                if require_roles_http_dep
-                                else []
-                            )
-                            + (
-                                [Depends(require_features_http_dep)]
-                                if require_features_http_dep
-                                else []
-                            )
-                            + ([Depends(r) for r in (requires if requires else [])])
+                            ([Depends(r) for r in (requires if requires else [])])
                             + (
                                 [
                                     Depends(r)
@@ -744,8 +669,6 @@ class RouterWrapper:
         version: VersionSpec | None = None,
         response_model: Any = Default(None),
         exceptions: set[Any] | None = None,
-        require_roles: set[Any] | None = None,
-        require_features: set[Any] | None = None,
         requires: Sequence[Any] | None = None,
         status_code: int | None = None,
         responses: dict[int | str, dict[str, Any]] | None = None,
@@ -771,8 +694,6 @@ class RouterWrapper:
             version=version,
             response_model=response_model,
             exceptions=exceptions,
-            require_roles=require_roles,
-            require_features=require_features,
             requires=requires,
             status_code=status_code,
             responses=responses,
@@ -800,8 +721,6 @@ class RouterWrapper:
         version: VersionSpec | None = None,
         response_model: Any = Default(None),
         exceptions: set[Any] | None = None,
-        require_roles: set[Any] | None = None,
-        require_features: set[Any] | None = None,
         requires: Sequence[Any] | None = None,
         status_code: int | None = None,
         responses: dict[int | str, dict[str, Any]] | None = None,
@@ -839,8 +758,6 @@ class RouterWrapper:
             version=version,
             response_model=response_model,
             exceptions=exceptions,
-            require_roles=require_roles,
-            require_features=require_features,
             requires=requires,
             status_code=status_code,
             responses=default_responses | (responses if responses else {}),
@@ -872,8 +789,6 @@ class RouterWrapper:
         version: VersionSpec | None = None,
         response_model: Any = Default(None),
         exceptions: set[Any] | None = None,
-        require_roles: set[Any] | None = None,
-        require_features: set[Any] | None = None,
         requires: Sequence[Any] | None = None,
         status_code: int | None = None,
         responses: dict[int | str, dict[str, Any]] | None = None,
@@ -899,8 +814,6 @@ class RouterWrapper:
             version=version,
             response_model=response_model,
             exceptions=exceptions,
-            require_roles=require_roles,
-            require_features=require_features,
             requires=requires,
             status_code=status_code,
             responses=responses,
@@ -928,8 +841,6 @@ class RouterWrapper:
         version: VersionSpec | None = None,
         response_model: Any = Default(None),
         exceptions: set[Any] | None = None,
-        require_roles: set[Any] | None = None,
-        require_features: set[Any] | None = None,
         requires: Sequence[Any] | None = None,
         status_code: int | None = None,
         responses: dict[int | str, dict[str, Any]] | None = None,
@@ -955,8 +866,6 @@ class RouterWrapper:
             version=version,
             response_model=response_model,
             exceptions=exceptions,
-            require_roles=require_roles,
-            require_features=require_features,
             requires=requires,
             status_code=status_code,
             responses=responses,
@@ -984,8 +893,6 @@ class RouterWrapper:
         version: VersionSpec | None = None,
         response_model: Any = Default(None),
         exceptions: set[Any] | None = None,
-        require_roles: set[Any] | None = None,
-        require_features: set[Any] | None = None,
         requires: Sequence[Any] | None = None,
         status_code: int | None = None,
         responses: dict[int | str, dict[str, Any]] | None = None,
@@ -1011,8 +918,6 @@ class RouterWrapper:
             version=version,
             response_model=response_model,
             exceptions=exceptions,
-            require_roles=require_roles,
-            require_features=require_features,
             requires=requires,
             status_code=status_code,
             responses=responses,
@@ -1040,8 +945,6 @@ class RouterWrapper:
         version: VersionSpec | None = None,
         response_model: Any = Default(None),
         exceptions: set[Any] | None = None,
-        require_roles: set[Any] | None = None,
-        require_features: set[Any] | None = None,
         requires: Sequence[Any] | None = None,
         status_code: int | None = None,
         responses: dict[int | str, dict[str, Any]] | None = None,
@@ -1067,8 +970,6 @@ class RouterWrapper:
             version=version,
             response_model=response_model,
             exceptions=exceptions,
-            require_roles=require_roles,
-            require_features=require_features,
             requires=requires,
             status_code=status_code,
             responses=responses,
