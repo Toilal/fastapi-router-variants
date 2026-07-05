@@ -16,6 +16,7 @@ from fastapi_router_variants.docs import (
     add_doc_routes_for_app,
     add_doc_routes_for_openapi_spec,
     add_doc_routes_for_version,
+    disable_default_docs,
 )
 from fastapi_router_variants.openapi import (
     AppOpenapiProvider,
@@ -121,6 +122,7 @@ __all__ = [
     "add_redirect_route",
     "api_version_from_path",
     "collect_app_routes",
+    "disable_default_docs",
     "get_openapi_static",
     "load_markdown",
     "normalize_version_spec",

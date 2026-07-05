@@ -44,6 +44,32 @@ def _get_root_path(req: Request) -> str:
     return str(req.scope.get("root_path", "").rstrip("/"))
 
 
+def disable_default_docs(app: FastAPI) -> None:
+    """Remove FastAPI's built-in ``/docs``, ``/redoc`` and ``/openapi.json``.
+
+    They are unversioned and would otherwise shadow the per-version documentation
+    this package mounts (in particular the root redirects at those same paths).
+    """
+    builtin_paths = {
+        app.docs_url,
+        app.redoc_url,
+        app.openapi_url,
+        app.swagger_ui_oauth2_redirect_url,
+    }
+    builtin_paths.discard(None)
+
+    app.router.routes = [
+        route
+        for route in app.router.routes
+        if getattr(route, "path", None) not in builtin_paths
+    ]
+
+    app.openapi_url = None
+    app.docs_url = None
+    app.redoc_url = None
+    app.swagger_ui_oauth2_redirect_url = None
+
+
 def add_doc_routes_for_app(
     app: FastAPI,
     *,
@@ -54,11 +80,15 @@ def add_doc_routes_for_app(
     swagger_css_url: str = DEFAULT_SWAGGER_CSS_URL,
     redoc_js_url: str = DEFAULT_REDOC_JS_URL,
     skip_add_routes: bool = False,
+    disable_builtin_docs: bool = True,
 ) -> OpenapiSpecs:
     defaults = cast("RouterWrapperApp", app).router_wrapper_class.defaults
 
     prefix_value = defaults.prefix if isinstance(defaults.prefix, str) else ""
     prefix = prefix_value or "/"
+
+    if disable_builtin_docs and not skip_add_routes:
+        disable_default_docs(app)
 
     openapi_provider = openapi_provider_factory(
         app, openapi_specs_dir, categories, title_prefix

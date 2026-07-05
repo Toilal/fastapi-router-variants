@@ -291,6 +291,10 @@ class TestDocRedirects:
             ("/api/docs/openapi.json", "/api/docs/v1/public/openapi.json"),
             ("/api", "/api/docs"),
             ("/", "/api/docs"),
+            ("/docs", "/api/docs"),
+            ("/openapi.json", "/api/docs/openapi.json"),
+            ("/redoc", "/api/docs/redoc"),
+            ("/swagger-ui", "/api/docs/swagger-ui"),
         ],
     )
     def test_redirect_targets(self, source: str, target: str) -> None:
@@ -311,6 +315,28 @@ class TestDocRedirects:
         assert response.status_code == 200
         assert str(response.url).endswith("/api/docs/v1/public/swagger-ui")
         assert "swagger-ui" in response.text.lower()
+
+    def test_builtin_docs_disabled_by_default(self) -> None:
+        app, _ = _build_app()
+        add_doc_routes_for_app(app)
+
+        assert app.openapi_url is None
+        assert app.docs_url is None
+        assert app.redoc_url is None
+
+        client = TestClient(app, follow_redirects=False)
+        assert client.get("/docs").status_code == 307
+        assert client.get("/openapi.json").status_code == 307
+
+    def test_builtin_docs_kept_when_opted_out(self) -> None:
+        app, _ = _build_app()
+        add_doc_routes_for_app(app, disable_builtin_docs=False)
+
+        assert app.openapi_url == "/openapi.json"
+
+        client = TestClient(app, follow_redirects=False)
+        assert client.get("/docs").status_code == 200
+        assert client.get("/openapi.json").status_code == 200
 
 
 class TestLocalFilesProvider:

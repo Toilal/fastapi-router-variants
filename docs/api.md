@@ -204,10 +204,18 @@ default).
 
 ## OpenAPI documentation
 
-### `add_doc_routes_for_app(app, *, openapi_specs_dir=None, categories=DEFAULT_CATEGORIES, title_prefix="", swagger_js_url=..., swagger_css_url=..., redoc_js_url=..., skip_add_routes=False) -> OpenapiSpecs`
+### `add_doc_routes_for_app(app, *, openapi_specs_dir=None, categories=DEFAULT_CATEGORIES, title_prefix="", swagger_js_url=..., swagger_css_url=..., redoc_js_url=..., skip_add_routes=False, disable_builtin_docs=True) -> OpenapiSpecs`
 
 High-level entry point: read the app's `router_wrapper_class.defaults` and mount
-the docs for every version and category under `{prefix}/docs`.
+the docs for every version and category under `{prefix}/docs`. By default it also
+removes FastAPI's built-in unversioned `/docs`, `/redoc` and `/openapi.json`
+(see `disable_default_docs`); pass `disable_builtin_docs=False` to keep them.
+
+### `disable_default_docs(app) -> None`
+
+Remove FastAPI's built-in `/docs`, `/redoc` and `/openapi.json` routes (and null
+the matching URLs) so they no longer shadow the per-version documentation and its
+root redirects.
 
 ### `add_doc_routes_for_all_versions(app, openapi_provider, doc_prefix="", prefix="", default_version=None, ...) -> OpenapiSpecs`
 
