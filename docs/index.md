@@ -1,4 +1,4 @@
-# fastapi-router-variants
+# FastAPI Router Variants
 
 [![Latest Version](https://img.shields.io/pypi/v/fastapi-router-variants.svg)](https://pypi.python.org/pypi/fastapi-router-variants)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Toilal/fastapi-router-variants/blob/develop/LICENSE)
@@ -11,20 +11,31 @@ Declare a route once and get **path variants**, **API versioning** and
 — for free.
 
 `fastapi-router-variants` wraps `APIRouter` with a `RouterWrapper` that expands a
-single route declaration into every variant it should serve — multiple paths,
+single route declaration into every variant it should serve: multiple paths,
 multiple version prefixes (`/v1/...`, `/v2/...`), multiple mount prefixes, with
-deprecation handled automatically — then builds a separate OpenAPI schema per
-version and mounts Swagger UI / ReDoc / `openapi.json` for each of them.
+deprecation handled automatically. It then builds a **separate OpenAPI schema per
+version** and mounts Swagger UI / ReDoc / `openapi.json` for each of them.
+
+## Requirements
+
+- Python ≥ 3.12
+- FastAPI ≥ 0.115
 
 ## Install
 
+Install with [pip](https://pip.pypa.io/):
+
 ```bash
 pip install fastapi-router-variants
-# or
+```
+
+Or add it to your project with [uv](https://docs.astral.sh/uv/):
+
+```bash
 uv add fastapi-router-variants
 ```
 
-## Usage
+## Quick start
 
 ```python
 from fastapi import FastAPI
@@ -53,25 +64,29 @@ app = FastAPI()
 app.include_router(router.base)
 ```
 
-The single `get` declaration above registers `GET /api/v1/users/{user_id}`,
-`GET /api/v2/users/{user_id}` and `GET /api/v3/users/{user_id}`.
+The single `get` declaration above registers:
 
-Path variants and flavors, versioning helpers, routing specs, per-version
-OpenAPI documents, custom categories, HTTP-error auto-documentation and
-role/feature injection are all covered in the documentation.
+```
+GET /api/v1/users/{user_id}
+GET /api/v2/users/{user_id}
+GET /api/v3/users/{user_id}
+```
 
-## Documentation
+`RouterWrapper` mirrors the `APIRouter` decorator surface — `get`, `post`,
+`put`, `patch`, `delete`, `api_route` and `websocket` — while adding the
+variant-expansion parameters (`version`, `prefix`, `deployment`, `public`, …).
+The underlying `APIRouter` is available as `router.base` and is what you pass to
+`app.include_router(...)`.
 
-Full documentation is available at
-[toilal.github.io/fastapi-router-variants](https://toilal.github.io/fastapi-router-variants/).
-A preview of the in-progress `develop` branch is published at
-[toilal.github.io/fastapi-router-variants/dev](https://toilal.github.io/fastapi-router-variants/dev/).
+## Where to go next
 
-## Requirements
-
-- Python ≥ 3.12
-- FastAPI ≥ 0.115
+- [Path variants](variants.md) — declare one route as several paths and flavors.
+- [API versioning](versioning.md) — expand a route across a range of versions.
+- [Routing specs](specs.md) — composable predicates to classify routes.
+- [OpenAPI documentation](openapi.md) — one documented API per version and category.
+- [API reference](api.md) — every public symbol, with signatures.
 
 ## License
 
-[MIT](./LICENSE) © Rémi Alvergnat
+`fastapi-router-variants` is licensed under the
+[MIT license](https://github.com/Toilal/fastapi-router-variants/blob/develop/LICENSE).
