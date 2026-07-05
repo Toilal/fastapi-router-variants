@@ -1,6 +1,6 @@
 [project]
 name = "fastapi-router-variants"
-version = "0.1.0"
+version = "0.2.0"
 description = "Path variants, API versioning and per-version OpenAPI documentation for FastAPI routers"
 dynamic = ["readme"]
 license = "MIT"
