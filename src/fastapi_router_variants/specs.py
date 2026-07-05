@@ -1,10 +1,12 @@
 import re
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, TypeVar
 
 from fastapi.routing import APIRoute
 from starlette.responses import JSONResponse, Response
 from starlette.routing import BaseRoute
+
+R = TypeVar("R", bound=BaseRoute)
 
 
 class RoutingSpec:
@@ -223,7 +225,7 @@ def _replace(
     return None
 
 
-def resolve_routes[R: BaseRoute](routes: Iterable[R], spec: RoutingSpec) -> Iterable[R]:
+def resolve_routes(routes: Iterable[R], spec: RoutingSpec) -> Iterable[R]:
     for route in routes:
         if resolve_route(route, spec, default_spec=Yes()):
             yield route
