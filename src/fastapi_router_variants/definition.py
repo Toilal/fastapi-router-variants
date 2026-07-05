@@ -50,6 +50,13 @@ from fastapi_router_variants.versioning import (
 CSVExample = Sequence[tuple[str, tuple[str, ...]]]
 
 
+def _describe_values(values: set[Any]) -> str:
+    def render(value: Any) -> str:
+        return str(value.value) if isinstance(value, Enum) else str(value)
+
+    return ", ".join(sorted(render(v) for v in values))
+
+
 def _csv_example_html_table(csv_example: CSVExample) -> str:
     headers = [col for col, _ in csv_example]
 
@@ -645,12 +652,12 @@ class RouterWrapper:
                     + ("\n\n" if (points or headline) and doc else "")
                     + (doc if doc else "")
                     + (
-                        f"\n\nFeature needed: {','.join(require_features)}"
+                        f"\n\nFeature needed: {_describe_values(require_features)}"
                         if require_features
                         else ""
                     )
                     + (
-                        f"\n\nRole needed: {', '.join(require_roles)}"
+                        f"\n\nRole needed: {_describe_values(require_roles)}"
                         if require_roles
                         else ""
                     )

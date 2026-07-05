@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from dataclasses import dataclass
+from enum import Enum
 
 import pytest
 from fastapi import FastAPI
@@ -442,6 +443,27 @@ class TestRolesAndFeatures:
         route = next(r for r in router.base.routes if isinstance(r, APIRoute))
         assert len(route.dependencies) == 1
         assert "Feature needed: beta" in (route.description or "")
+
+    def test_require_roles_accepts_enum_values(self) -> None:
+        class Role(Enum):
+            ADMIN = "admin"
+            EDITOR = "editor"
+
+        def require_roles(roles: set[Role]) -> Callable[[], None]:
+            def dep() -> None: ...
+
+            return dep
+
+        RouterWrapper.require_roles = staticmethod(require_roles)
+
+        router = RouterWrapper()
+
+        @router.get("/secure", require_roles={Role.EDITOR, Role.ADMIN})
+        def secure() -> None: ...
+
+        route = next(r for r in router.base.routes if isinstance(r, APIRoute))
+        assert len(route.dependencies) == 1
+        assert "Role needed: admin, editor" in (route.description or "")
 
 
 class MyError(Exception):
