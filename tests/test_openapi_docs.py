@@ -202,6 +202,56 @@ class TestDocRoutesMounting:
         response = client.get("/api/docs")
         assert response.status_code == 200
 
+    @staticmethod
+    def _build_sparse_app(default_version: int) -> FastAPI:
+        @dataclass(frozen=True)
+        class SparseDefaults(RouterDefaults):
+            prefix = "/api"
+            version = True
+            version_range = (1, 3)
+            version_default = default_version
+
+        class SparseRouter(RouterWrapper):
+            defaults = SparseDefaults()
+
+            @classmethod
+            def reset_defaults(cls) -> None:
+                cls.defaults = SparseDefaults()
+
+        router = SparseRouter()
+
+        @router.get("/a", version=(1, 1))
+        def a_ep() -> dict[str, str]:
+            return {}
+
+        @router.get("/b", version=(3, 3))
+        def b_ep() -> dict[str, str]:
+            return {}
+
+        app = FastAPI()
+        app.include_router(router.base)
+        app.router_wrapper_class = SparseRouter  # type: ignore[attr-defined]
+        return app
+
+    def test_absent_versions_get_no_doc_routes(self) -> None:
+        app = self._build_sparse_app(default_version=1)
+        add_doc_routes_for_app(app)
+        client = TestClient(app)
+
+        assert client.get("/api/docs/v1/public/openapi.json").status_code == 200
+        assert client.get("/api/docs/v3/public/openapi.json").status_code == 200
+        assert client.get("/api/docs/v2/public/openapi.json").status_code == 404
+        assert client.get("/api/docs").status_code == 200
+
+    def test_default_version_in_gap_still_serves_landing(self) -> None:
+        app = self._build_sparse_app(default_version=2)
+        add_doc_routes_for_app(app)
+        client = TestClient(app)
+
+        # v2 has no routes but is the default, so its landing must resolve.
+        assert client.get("/api/docs").status_code == 200
+        assert client.get("/api/docs/v2/public/openapi.json").status_code == 200
+
     def test_redirect_routes_are_hidden_from_schema(self) -> None:
         app = FastAPI()
         add_redirect_route(app, "/from", "/to")

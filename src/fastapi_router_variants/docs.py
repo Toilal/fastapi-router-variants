@@ -115,11 +115,15 @@ def add_doc_routes_for_all_versions(
 
         min_version, max_version = version_range
         present_versions = openapi_provider.get_versions()
-        versions = (
-            sorted(present_versions)
-            if present_versions is not None
-            else range(min_version, max_version + 1)
-        )
+        if present_versions is not None:
+            version_set = set(present_versions)
+            # The default version hosts the landing redirects, so it must be
+            # mounted even when it carries no routes of its own.
+            if default_version is not None:
+                version_set.add(default_version)
+            versions: range | list[int] = sorted(version_set)
+        else:
+            versions = range(min_version, max_version + 1)
 
         for version in versions:
             version_specs = add_doc_routes_for_version(
