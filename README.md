@@ -1,7 +1,10 @@
 # fastapi-router-variants
 
 [![Latest Version](https://img.shields.io/pypi/v/fastapi-router-variants.svg)](https://pypi.python.org/pypi/fastapi-router-variants)
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Toilal/fastapi-router-variants/blob/develop/LICENSE)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/Toilal/fastapi-router-variants/ci.yml?branch=develop)](https://github.com/Toilal/fastapi-router-variants/actions/workflows/ci.yml)
+[![Codecov](https://img.shields.io/codecov/c/github/Toilal/fastapi-router-variants)](https://codecov.io/gh/Toilal/fastapi-router-variants)
+[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/relekang/python-semantic-release)
 
 Declare a route once and get **path variants**, **API versioning** and
 **per-version OpenAPI documentation** for [FastAPI](https://fastapi.tiangolo.com/)
