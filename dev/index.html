@@ -696,6 +696,8 @@ and avoid the regression (a no-op on older FastAPI):</p>
 </span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">app</span><span class="o">.</span><span class="n">include_router</span><span class="p">(</span><span class="n">router</span><span class="o">.</span><span class="n">base</span><span class="p">)</span>
 </span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">flatten_included_routers</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
 </span></code></pre></div>
+<p>Flattened HTTP and WebSocket routes remain bound to <code>app</code>, so dependency
+overrides configured through <code>app.dependency_overrides</code> continue to apply.</p>
 <h2 id="where-to-go-next">Where to go next<a class="headerlink" href="#where-to-go-next" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="variants/">Path variants</a> — declare one route as several paths and flavors.</li>

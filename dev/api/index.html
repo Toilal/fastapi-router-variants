@@ -1828,8 +1828,9 @@ included routers and mounts).</p>
 <code>_IncludedRouter</code> remains: each transparent include is replaced by the real leaf
 routes it wraps. Call it once after all <code>include_router</code> calls to avoid the
 per-request memory bloat FastAPI &gt;= 0.139 incurs on composed apps. Prefixed or
-dependency-carrying includes, mounts, WebSocket and redirect routes are left
-untouched; a no-op on FastAPI 0.115→0.138.</p>
+dependency-carrying includes, mounts and redirect routes are left untouched.
+Flattened HTTP and WebSocket routes are rebound to the serving app so
+<code>app.dependency_overrides</code> keeps working. A no-op on FastAPI 0.115→0.138.</p>
 <h3 id="get_openapi_staticapp-title-routes-dict"><code>get_openapi_static(app, title, routes) -&gt; dict</code><a class="headerlink" href="#get_openapi_staticapp-title-routes-dict" title="Permanent link">&para;</a></h3>
 <p>Build an OpenAPI 3.1.0 document for a fixed set of routes, inheriting the app's
 metadata.</p>
