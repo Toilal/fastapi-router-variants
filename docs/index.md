@@ -78,6 +78,20 @@ variant-expansion parameters (`version`, `prefix`, `deployment`, `public`, …).
 The underlying `APIRouter` is available as `router.base` and is what you pass to
 `app.include_router(...)`.
 
+On FastAPI >= 0.139 each `include_router` call leaves an opaque lazily-mounted
+router in the app's routing table; under load Starlette makes those wrappers
+retain the effective route tree, inflating memory. Once composition is done,
+call `flatten_included_routers(app)` to splice the real routes back into place
+and avoid the regression (a no-op on older FastAPI):
+
+```python
+from fastapi_router_variants import flatten_included_routers
+
+app = FastAPI()
+app.include_router(router.base)
+flatten_included_routers(app)
+```
+
 ## Where to go next
 
 - [Path variants](variants.md) — declare one route as several paths and flavors.

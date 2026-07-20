@@ -14,6 +14,7 @@ from fastapi_router_variants import (
     RouterWrapper,
     RouterWrapperError,
     collect_app_routes,
+    flatten_included_routers,
 )
 
 
@@ -397,6 +398,97 @@ class TestRegistrationAndDispatch:
 
         paths = {r.path for r in collect_app_routes(app) if isinstance(r, APIRoute)}
         assert "/child" in paths
+
+
+def _has_included_router(routes: object) -> bool:
+    return any(
+        getattr(route, "original_router", None) is not None
+        for route in routes  # type: ignore[union-attr]
+    )
+
+
+class TestFlattenIncludedRouters:
+    def test_flattens_lazily_mounted_wrappers(self) -> None:
+        parent = RouterWrapper()
+        child = RouterWrapper()
+
+        @child.get("/child")
+        def child_impl() -> None: ...
+
+        @parent.get("/parent")
+        def parent_impl() -> None: ...
+
+        parent.include_router(child)
+
+        app = FastAPI()
+        app.include_router(parent.base)
+
+        flatten_included_routers(app)
+
+        assert not _has_included_router(app.router.routes)
+        served = {r.path for r in app.router.routes if isinstance(r, APIRoute)}
+        assert {"/parent", "/child"} <= served
+
+    def test_preserves_dispatch(self) -> None:
+        router = RouterWrapper()
+
+        @router.get("/ping")
+        def ping() -> dict[str, str]:
+            return {"pong": "ok"}
+
+        app = FastAPI()
+        app.include_router(router.base)
+        flatten_included_routers(app)
+
+        response = TestClient(app).get("/ping")
+        assert response.status_code == 200
+        assert response.json() == {"pong": "ok"}
+
+    def test_is_idempotent(self) -> None:
+        router = RouterWrapper()
+
+        @router.get("/ping")
+        def ping() -> None: ...
+
+        app = FastAPI()
+        app.include_router(router.base)
+
+        flatten_included_routers(app)
+        first = list(app.router.routes)
+        flatten_included_routers(app)
+
+        assert app.router.routes == first
+
+    def test_keeps_prefixed_include_intact(self) -> None:
+        child = RouterWrapper()
+
+        @child.get("/child")
+        def child_impl() -> None: ...
+
+        app = FastAPI()
+        app.include_router(child.base, prefix="/api")
+        had_wrapper = _has_included_router(app.router.routes)
+
+        flatten_included_routers(app)
+
+        assert _has_included_router(app.router.routes) == had_wrapper
+        assert TestClient(app).get("/api/child").status_code == HTTP_204_NO_CONTENT
+
+    def test_accepts_router_wrapper(self) -> None:
+        parent = RouterWrapper()
+        child = RouterWrapper()
+
+        @child.get("/child")
+        def child_impl() -> None: ...
+
+        parent.include_router(child)
+
+        flatten_included_routers(parent)
+
+        assert not _has_included_router(parent.base.routes)
+        assert any(
+            isinstance(r, APIRoute) and r.path == "/child" for r in parent.base.routes
+        )
 
 
 class TestDefaultsDeployment:

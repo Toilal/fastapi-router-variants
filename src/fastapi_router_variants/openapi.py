@@ -56,6 +56,73 @@ def collect_app_routes(container: Any) -> list[BaseRoute]:
     return collected
 
 
+def _include_is_transparent(route: BaseRoute) -> bool:
+    """Whether an ``_IncludedRouter`` mounts its child routes unchanged.
+
+    FastAPI >= 0.139 stores the ``include_router`` arguments (prefix, tags,
+    dependencies, …) on ``route.include_context`` and applies them lazily. When
+    none of them alter the child routes, the child's own route objects already
+    are the effective serving routes and can be spliced in as-is. Any transform
+    means the effective route differs from the stored child route, so the
+    wrapper must stay in place to keep serving correctly.
+    """
+    context = getattr(route, "include_context", None)
+    if context is None:
+        return True
+    return not (
+        getattr(context, "prefix", "")
+        or getattr(context, "tags", None)
+        or getattr(context, "dependencies", None)
+        or getattr(context, "responses", None)
+        or getattr(context, "callbacks", None)
+        or getattr(context, "deprecated", None)
+    )
+
+
+def _flatten_included_routes(routes: Sequence[BaseRoute]) -> list[BaseRoute]:
+    flattened: list[BaseRoute] = []
+    for route in routes:
+        original_router = getattr(route, "original_router", None)
+        if original_router is not None and _include_is_transparent(route):
+            flattened.extend(_flatten_included_routes(original_router.routes))
+        else:
+            flattened.append(route)
+    return flattened
+
+
+def flatten_included_routers(container: Any) -> None:
+    """Rewrite a serving router's ``routes`` so no ``_IncludedRouter`` remains.
+
+    Since FastAPI 0.139 each ``include_router`` call appends a single opaque
+    ``_IncludedRouter`` to the parent ``routes`` instead of flattening the
+    child's routes. Starlette matches every ``routes`` entry on each request, and
+    ``_IncludedRouter.matches()`` materialises and retains the effective
+    dependency tree of every child route on first match — inflating RSS by
+    hundreds of MB for a large composed app and leading to OOM under load.
+
+    Replacing each transparent ``_IncludedRouter`` in place with the real leaf
+    routes it wraps restores the flat routing table FastAPI <= 0.138 built
+    eagerly, so Starlette never calls ``_IncludedRouter.matches()`` on the hot
+    path. Only entries carrying ``original_router`` whose ``include_context``
+    applies no transform are flattened; ``Mount``/sub-apps, ``WebSocketRoute``,
+    redirect routes and prefixed/dependency-carrying includes are kept as-is. A
+    no-op on FastAPI 0.115→0.138, where the table is already flat.
+
+    Call it once after all ``include_router`` calls, before serving. Accepts a
+    ``FastAPI`` app, an ``APIRouter`` or a ``RouterWrapper``.
+    """
+    base = getattr(container, "base", None)
+    target = base if base is not None else container
+    router = getattr(target, "router", target)
+    routes = getattr(router, "routes", None)
+    if routes is None:
+        return
+    routes[:] = _flatten_included_routes(routes)
+    mark_changed = getattr(router, "_mark_routes_changed", None)
+    if callable(mark_changed):
+        mark_changed()
+
+
 INTERNAL_OPENAPI_EXTENSIONS = (
     "x-api-version",
     "x-path-prefix",
