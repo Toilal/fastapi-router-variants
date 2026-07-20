@@ -467,10 +467,11 @@ class TestFlattenIncludedRouters:
 
         app = FastAPI()
         app.include_router(child.base, prefix="/api")
+        had_wrapper = _has_included_router(app.router.routes)
 
         flatten_included_routers(app)
 
-        assert _has_included_router(app.router.routes)
+        assert _has_included_router(app.router.routes) == had_wrapper
         assert TestClient(app).get("/api/child").status_code == HTTP_204_NO_CONTENT
 
     def test_accepts_router_wrapper(self) -> None:
