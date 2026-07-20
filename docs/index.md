@@ -92,6 +92,9 @@ app.include_router(router.base)
 flatten_included_routers(app)
 ```
 
+Flattened HTTP and WebSocket routes remain bound to `app`, so dependency
+overrides configured through `app.dependency_overrides` continue to apply.
+
 ## Where to go next
 
 - [Path variants](variants.md) — declare one route as several paths and flavors.

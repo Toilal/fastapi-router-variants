@@ -8,7 +8,13 @@ from typing import Any, ClassVar, Protocol, cast
 
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
-from fastapi.routing import APIRoute
+from fastapi.routing import (
+    APIRoute,
+    APIWebSocketRoute,
+    get_websocket_app,
+    request_response,
+    websocket_session,
+)
 from openapi_spec_validator import validate
 from starlette.routing import BaseRoute
 
@@ -79,12 +85,34 @@ def _include_is_transparent(route: BaseRoute) -> bool:
     )
 
 
-def _flatten_included_routes(routes: Sequence[BaseRoute]) -> list[BaseRoute]:
+def _reparent_route(route: BaseRoute, dependency_overrides_provider: Any) -> None:
+    """Bind a flattened route's frozen ASGI handler to its serving container."""
+    if isinstance(route, APIRoute):
+        route.dependency_overrides_provider = dependency_overrides_provider
+        route.app = request_response(route.get_route_handler())
+    elif isinstance(route, APIWebSocketRoute):
+        route.app = websocket_session(
+            get_websocket_app(
+                dependant=route.dependant,
+                dependency_overrides_provider=dependency_overrides_provider,
+                embed_body_fields=route._embed_body_fields,
+            )
+        )
+
+
+def _flatten_included_routes(
+    routes: Sequence[BaseRoute], dependency_overrides_provider: Any
+) -> list[BaseRoute]:
     flattened: list[BaseRoute] = []
     for route in routes:
         original_router = getattr(route, "original_router", None)
         if original_router is not None and _include_is_transparent(route):
-            flattened.extend(_flatten_included_routes(original_router.routes))
+            child_routes = _flatten_included_routes(
+                original_router.routes, dependency_overrides_provider
+            )
+            for child_route in child_routes:
+                _reparent_route(child_route, dependency_overrides_provider)
+            flattened.extend(child_routes)
         else:
             flattened.append(route)
     return flattened
@@ -117,7 +145,9 @@ def flatten_included_routers(container: Any) -> None:
     routes = getattr(router, "routes", None)
     if routes is None:
         return
-    routes[:] = _flatten_included_routes(routes)
+    routes[:] = _flatten_included_routes(
+        routes, getattr(router, "dependency_overrides_provider", None)
+    )
     mark_changed = getattr(router, "_mark_routes_changed", None)
     if callable(mark_changed):
         mark_changed()
