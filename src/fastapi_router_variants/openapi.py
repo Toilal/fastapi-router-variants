@@ -137,9 +137,10 @@ def flatten_included_routers(container: Any) -> None:
     routes it wraps restores the flat routing table FastAPI <= 0.138 built
     eagerly, so Starlette never calls ``_IncludedRouter.matches()`` on the hot
     path. Only entries carrying ``original_router`` whose ``include_context``
-    applies no transform are flattened; ``Mount``/sub-apps, ``WebSocketRoute``,
-    redirect routes and prefixed/dependency-carrying includes are kept as-is. A
-    no-op on FastAPI 0.115→0.138, where the table is already flat.
+    applies no transform are flattened; ``Mount``/sub-apps, redirect routes and
+    prefixed/dependency-carrying includes are kept as-is. Flattened HTTP and
+    WebSocket routes are rebound to the serving container's dependency override
+    provider. A no-op on FastAPI 0.115→0.138, where the table is already flat.
 
     Call it once after all ``include_router`` calls, before serving. Accepts a
     ``FastAPI`` app, an ``APIRouter`` or a ``RouterWrapper``.
