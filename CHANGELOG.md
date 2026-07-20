@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.2.1 (2026-07-20)
+
+### Bug Fixes
+
+- Flatten lazily-mounted routers to avoid FastAPI >=0.139 memory regression
+  ([#15](https://github.com/Toilal/fastapi-router-variants/pull/15),
+  [`21db307`](https://github.com/Toilal/fastapi-router-variants/commit/21db307c01a0403854e3b097526f22087223807e))
+
+
 ## v0.2.0 (2026-07-05)
 
 ### Features
