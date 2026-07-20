@@ -1,6 +1,7 @@
 import json
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Mapping, Sequence
+from copy import copy
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
@@ -85,12 +86,14 @@ def _include_is_transparent(route: BaseRoute) -> bool:
     )
 
 
-def _reparent_route(route: BaseRoute, dependency_overrides_provider: Any) -> None:
-    """Bind a flattened route's frozen ASGI handler to its serving container."""
+def _reparent_route(route: BaseRoute, dependency_overrides_provider: Any) -> BaseRoute:
+    """Copy a flattened route and bind its handler to its serving container."""
     if isinstance(route, APIRoute):
+        route = copy(route)
         route.dependency_overrides_provider = dependency_overrides_provider
         route.app = request_response(route.get_route_handler())
     elif isinstance(route, APIWebSocketRoute):
+        route = copy(route)
         route.app = websocket_session(
             get_websocket_app(
                 dependant=route.dependant,
@@ -98,6 +101,7 @@ def _reparent_route(route: BaseRoute, dependency_overrides_provider: Any) -> Non
                 embed_body_fields=route._embed_body_fields,
             )
         )
+    return route
 
 
 def _flatten_included_routes(
@@ -110,9 +114,10 @@ def _flatten_included_routes(
             child_routes = _flatten_included_routes(
                 original_router.routes, dependency_overrides_provider
             )
-            for child_route in child_routes:
+            flattened.extend(
                 _reparent_route(child_route, dependency_overrides_provider)
-            flattened.extend(child_routes)
+                for child_route in child_routes
+            )
         else:
             flattened.append(route)
     return flattened
