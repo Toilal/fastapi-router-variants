@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 import pytest
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, WebSocket
 from fastapi.openapi.utils import get_openapi
 from fastapi.routing import APIRoute
 from starlette.routing import WebSocketRoute
@@ -443,6 +443,71 @@ class TestFlattenIncludedRouters:
         response = TestClient(app).get("/ping")
         assert response.status_code == 200
         assert response.json() == {"pong": "ok"}
+
+    def test_preserves_dependency_overrides(self) -> None:
+        def get_value() -> str:
+            return "real"
+
+        router = RouterWrapper()
+
+        @router.get("/value")
+        def read_value(value: str = Depends(get_value)) -> dict[str, str]:
+            return {"value": value}
+
+        app = FastAPI()
+        app.include_router(router.base)
+        flatten_included_routers(app)
+        app.dependency_overrides[get_value] = lambda: "overridden"
+
+        response = TestClient(app).get("/value")
+
+        assert response.status_code == 200
+        assert response.json() == {"value": "overridden"}
+
+    def test_isolates_dependency_overrides_between_apps(self) -> None:
+        def get_value() -> str:
+            return "real"
+
+        router = RouterWrapper()
+
+        @router.get("/value")
+        def read_value(value: str = Depends(get_value)) -> dict[str, str]:
+            return {"value": value}
+
+        first_app = FastAPI()
+        first_app.include_router(router.base)
+        flatten_included_routers(first_app)
+        first_app.dependency_overrides[get_value] = lambda: "first"
+
+        second_app = FastAPI()
+        second_app.include_router(router.base)
+        flatten_included_routers(second_app)
+        second_app.dependency_overrides[get_value] = lambda: "second"
+
+        assert TestClient(first_app).get("/value").json() == {"value": "first"}
+        assert TestClient(second_app).get("/value").json() == {"value": "second"}
+
+    def test_preserves_websocket_dependency_overrides(self) -> None:
+        def get_value() -> str:
+            return "real"
+
+        router = RouterWrapper()
+
+        @router.websocket("/ws")
+        async def websocket_value(
+            websocket: WebSocket, value: str = Depends(get_value)
+        ) -> None:
+            await websocket.accept()
+            await websocket.send_text(value)
+            await websocket.close()
+
+        app = FastAPI()
+        app.include_router(router.base)
+        flatten_included_routers(app)
+        app.dependency_overrides[get_value] = lambda: "overridden"
+
+        with TestClient(app).websocket_connect("/ws") as websocket:
+            assert websocket.receive_text() == "overridden"
 
     def test_is_idempotent(self) -> None:
         router = RouterWrapper()

@@ -277,8 +277,9 @@ Rewrite a serving app/router (or `RouterWrapper`) in place so no lazily-mounted
 `_IncludedRouter` remains: each transparent include is replaced by the real leaf
 routes it wraps. Call it once after all `include_router` calls to avoid the
 per-request memory bloat FastAPI >= 0.139 incurs on composed apps. Prefixed or
-dependency-carrying includes, mounts, WebSocket and redirect routes are left
-untouched; a no-op on FastAPI 0.115→0.138.
+dependency-carrying includes, mounts and redirect routes are left untouched.
+Flattened HTTP and WebSocket routes are rebound to the serving app so
+`app.dependency_overrides` keeps working. A no-op on FastAPI 0.115→0.138.
 
 ### `get_openapi_static(app, title, routes) -> dict`
 
