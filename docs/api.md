@@ -271,6 +271,15 @@ specs, otherwise an `AppOpenapiProvider`.
 Flatten every leaf route reachable from an app or router (descending into
 included routers and mounts).
 
+### `flatten_included_routers(container) -> None`
+
+Rewrite a serving app/router (or `RouterWrapper`) in place so no lazily-mounted
+`_IncludedRouter` remains: each transparent include is replaced by the real leaf
+routes it wraps. Call it once after all `include_router` calls to avoid the
+per-request memory bloat FastAPI >= 0.139 incurs on composed apps. Prefixed or
+dependency-carrying includes, mounts, WebSocket and redirect routes are left
+untouched; a no-op on FastAPI 0.115→0.138.
+
 ### `get_openapi_static(app, title, routes) -> dict`
 
 Build an OpenAPI 3.1.0 document for a fixed set of routes, inheriting the app's

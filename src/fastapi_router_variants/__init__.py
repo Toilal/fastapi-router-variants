@@ -26,6 +26,7 @@ from fastapi_router_variants.openapi import (
     OpenapiSpecCategory,
     OpenapiSpecs,
     collect_app_routes,
+    flatten_included_routers,
     get_openapi_static,
     openapi_provider_factory,
 )
@@ -123,6 +124,7 @@ __all__ = [
     "api_version_from_path",
     "collect_app_routes",
     "disable_default_docs",
+    "flatten_included_routers",
     "get_openapi_static",
     "load_markdown",
     "normalize_version_spec",
