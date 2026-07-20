@@ -685,6 +685,17 @@ version</strong> and mounts Swagger UI / ReDoc / <code>openapi.json</code> for e
 variant-expansion parameters (<code>version</code>, <code>prefix</code>, <code>deployment</code>, <code>public</code>, …).
 The underlying <code>APIRouter</code> is available as <code>router.base</code> and is what you pass to
 <code>app.include_router(...)</code>.</p>
+<p>On FastAPI &gt;= 0.139 each <code>include_router</code> call leaves an opaque lazily-mounted
+router in the app's routing table; under load Starlette makes those wrappers
+retain the effective route tree, inflating memory. Once composition is done,
+call <code>flatten_included_routers(app)</code> to splice the real routes back into place
+and avoid the regression (a no-op on older FastAPI):</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi_router_variants</span><span class="w"> </span><span class="kn">import</span> <span class="n">flatten_included_routers</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">()</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">app</span><span class="o">.</span><span class="n">include_router</span><span class="p">(</span><span class="n">router</span><span class="o">.</span><span class="n">base</span><span class="p">)</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">flatten_included_routers</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+</span></code></pre></div>
 <h2 id="where-to-go-next">Where to go next<a class="headerlink" href="#where-to-go-next" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="variants/">Path variants</a> — declare one route as several paths and flavors.</li>

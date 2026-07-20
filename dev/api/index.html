@@ -930,6 +930,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#flatten_included_routerscontainer-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>flatten_included_routers(container) -&gt; None</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#get_openapi_staticapp-title-routes-dict" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1525,6 +1536,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#flatten_included_routerscontainer-none" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>flatten_included_routers(container) -&gt; None</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#get_openapi_staticapp-title-routes-dict" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1801,6 +1823,13 @@ specs, otherwise an <code>AppOpenapiProvider</code>.</p>
 <h3 id="collect_app_routescontainer-listbaseroute"><code>collect_app_routes(container) -&gt; list[BaseRoute]</code><a class="headerlink" href="#collect_app_routescontainer-listbaseroute" title="Permanent link">&para;</a></h3>
 <p>Flatten every leaf route reachable from an app or router (descending into
 included routers and mounts).</p>
+<h3 id="flatten_included_routerscontainer-none"><code>flatten_included_routers(container) -&gt; None</code><a class="headerlink" href="#flatten_included_routerscontainer-none" title="Permanent link">&para;</a></h3>
+<p>Rewrite a serving app/router (or <code>RouterWrapper</code>) in place so no lazily-mounted
+<code>_IncludedRouter</code> remains: each transparent include is replaced by the real leaf
+routes it wraps. Call it once after all <code>include_router</code> calls to avoid the
+per-request memory bloat FastAPI &gt;= 0.139 incurs on composed apps. Prefixed or
+dependency-carrying includes, mounts, WebSocket and redirect routes are left
+untouched; a no-op on FastAPI 0.115→0.138.</p>
 <h3 id="get_openapi_staticapp-title-routes-dict"><code>get_openapi_static(app, title, routes) -&gt; dict</code><a class="headerlink" href="#get_openapi_staticapp-title-routes-dict" title="Permanent link">&para;</a></h3>
 <p>Build an OpenAPI 3.1.0 document for a fixed set of routes, inheriting the app's
 metadata.</p>
