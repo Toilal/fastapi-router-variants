@@ -2,6 +2,29 @@
 
 <!-- version list -->
 
+## v0.2.2 (2026-07-25)
+
+### Bug Fixes
+
+- **openapi**: Clarify WebSocket route rebinding
+  ([`26360ed`](https://github.com/Toilal/fastapi-router-variants/commit/26360ed181ef95353f90186bf685da3d18384a6f))
+
+- **openapi**: Document preserved dependency overrides
+  ([`ce4e7f5`](https://github.com/Toilal/fastapi-router-variants/commit/ce4e7f5a7474f4715f13b9ada9b827ecc0fd0ecc))
+
+- **openapi**: Isolate flattened routes between apps
+  ([`62b7161`](https://github.com/Toilal/fastapi-router-variants/commit/62b716185620966e583306221c2b3fae18f92b87))
+
+- **openapi**: Preserve overrides when flattening routers
+  ([`13b8175`](https://github.com/Toilal/fastapi-router-variants/commit/13b8175194804c67df9b4448ae7bb857f0abb43e))
+
+- **openapi**: Remove project-specific changelog entry
+  ([`36d8fc8`](https://github.com/Toilal/fastapi-router-variants/commit/36d8fc8f26c282bb8ce6ca306ae98e2905ed27ae))
+
+- **openapi**: Remove project-specific implementation notes
+  ([`e2150fc`](https://github.com/Toilal/fastapi-router-variants/commit/e2150fcbe4e6c4513c3807a8f3d16d39cdf52be2))
+
+
 ## v0.2.1 (2026-07-20)
 
 ### Bug Fixes
