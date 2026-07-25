@@ -60,7 +60,10 @@ jobs:
           - "0.120.0"
           - "0.123.0"
           - "0.130.0"
-          - "0.139.0"   # latest
+          - "0.136.3"   # last release that propagates the override provider natively
+          - "0.137.2"   # first release where include_router stops propagating it
+          - "0.139.0"   # first release wrapping included routes in _IncludedRouter
+          - "0.140.0"   # latest
 
     steps:
       - uses: actions/checkout@v7
