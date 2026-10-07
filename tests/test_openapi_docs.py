@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import pytest
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 from starlette.testclient import TestClient
 
 from fastapi_router_variants import (
@@ -161,6 +162,63 @@ class TestAppOpenapiProvider:
 
         assert "/api/v1/partner" in spec["paths"]
         assert "/api/v1/public" not in spec["paths"]
+
+
+def _items_router() -> APIRouter:
+    child = APIRouter()
+
+    @child.get("/items", tags=["child"])
+    def items() -> list[int]:
+        return [1]
+
+    return child
+
+
+def _documented_paths(app: FastAPI) -> dict[str, Any]:
+    provider = AppOpenapiProvider(app, collect_app_routes(app))
+    paths: dict[str, Any] = provider.load_openapi(None, "", INTERNAL, "")["paths"]
+    return paths
+
+
+class TestAppOpenapiProviderIncludes:
+    def test_documents_include_prefix_tags_and_responses(self) -> None:
+        app = FastAPI()
+        app.include_router(
+            _items_router(),
+            prefix="/api",
+            tags=["api"],
+            responses={418: {"description": "teapot"}},
+        )
+
+        paths = _documented_paths(app)
+
+        assert list(paths) == ["/api/items"]
+        assert paths["/api/items"]["get"]["tags"] == ["api", "child"]
+        assert "418" in paths["/api/items"]["get"]["responses"]
+
+    @pytest.mark.parametrize("hidden_kind", ["api_router", "router_wrapper"])
+    def test_hides_routes_of_hidden_including_router(self, hidden_kind: str) -> None:
+        app = FastAPI()
+        if hidden_kind == "api_router":
+            hidden = APIRouter(include_in_schema=False)
+            hidden.include_router(_items_router())
+            app.include_router(hidden)
+        else:
+            wrapper = RouterWrapper(hidden=True)
+            wrapper.include_router(_items_router())
+            app.include_router(wrapper.base)
+
+        assert _documented_paths(app) == {}
+
+    def test_documents_including_router_operation_id(self) -> None:
+        wrapper = RouterWrapper()
+        wrapper.include_router(_items_router(), prefix="/wrapped")
+        app = FastAPI()
+        app.include_router(wrapper.base)
+
+        operation = _documented_paths(app)["/wrapped/items"]["get"]
+
+        assert operation["operationId"] == "getWrappedItems"
 
 
 class TestDocRoutesMounting:

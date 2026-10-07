@@ -1,10 +1,14 @@
+import inspect
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
 import pytest
-from fastapi import Depends, FastAPI, WebSocket
+from fastapi import APIRouter, Depends, FastAPI, Header, WebSocket
 from fastapi.openapi.utils import get_openapi
+from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
-from starlette.routing import WebSocketRoute
+from starlette.routing import BaseRoute, WebSocketRoute
 from starlette.status import HTTP_204_NO_CONTENT
 from starlette.testclient import TestClient
 
@@ -16,6 +20,7 @@ from fastapi_router_variants import (
     collect_app_routes,
     flatten_included_routers,
 )
+from fastapi_router_variants.openapi import materialize_included_routes
 
 
 def route_data(route: APIRoute) -> tuple[str, int | None, bool | None]:
@@ -524,7 +529,7 @@ class TestFlattenIncludedRouters:
 
         assert app.router.routes == first
 
-    def test_keeps_prefixed_include_intact(self) -> None:
+    def test_flattens_prefixed_include(self) -> None:
         child = RouterWrapper()
 
         @child.get("/child")
@@ -532,11 +537,10 @@ class TestFlattenIncludedRouters:
 
         app = FastAPI()
         app.include_router(child.base, prefix="/api")
-        had_wrapper = _has_included_router(app.router.routes)
 
         flatten_included_routers(app)
 
-        assert _has_included_router(app.router.routes) == had_wrapper
+        assert not _has_included_router(app.router.routes)
         assert TestClient(app).get("/api/child").status_code == HTTP_204_NO_CONTENT
 
     def test_accepts_router_wrapper(self) -> None:
@@ -553,6 +557,180 @@ class TestFlattenIncludedRouters:
         assert not _has_included_router(parent.base.routes)
         assert any(
             isinstance(r, APIRoute) and r.path == "/child" for r in parent.base.routes
+        )
+
+
+class MarkedJSONResponse(JSONResponse):
+    def __init__(self, content: Any = None, status_code: int = 200, **kwargs: Any):
+        super().__init__(content, status_code, **kwargs)
+        self.headers["x-response-class"] = "marked"
+
+
+def _get_value() -> str:
+    return "real"
+
+
+def _require_token(x_token: str = Header()) -> None: ...
+
+
+def _items_router() -> APIRouter:
+    child = APIRouter()
+
+    @child.get("/items", tags=["child"])
+    def items(value: str = Depends(_get_value)) -> dict[str, str]:
+        return {"value": value}
+
+    return child
+
+
+def _route_signature(route: BaseRoute) -> tuple[Any, ...]:
+    assert isinstance(route, APIRoute)
+    return (
+        route.path,
+        route.methods,
+        route.tags,
+        [d.dependency for d in route.dependencies],
+        route.responses,
+        route.include_in_schema,
+        route.response_class,
+        route.unique_id,
+    )
+
+
+class TestFlattenIncludeSettings:
+    def test_keeps_include_tags_and_responses(self) -> None:
+        app = FastAPI()
+        app.include_router(
+            _items_router(),
+            prefix="/api",
+            tags=["api"],
+            responses={418: {"description": "teapot"}},
+        )
+        flatten_included_routers(app)
+
+        operation = app.openapi()["paths"]["/api/items"]["get"]
+
+        assert operation["tags"] == ["api", "child"]
+        assert "418" in operation["responses"]
+
+    @pytest.mark.parametrize("hidden_kind", ["api_router", "router_wrapper"])
+    def test_keeps_including_router_hidden(self, hidden_kind: str) -> None:
+        app = FastAPI()
+        if hidden_kind == "api_router":
+            hidden = APIRouter(include_in_schema=False)
+            hidden.include_router(_items_router())
+            app.include_router(hidden)
+        else:
+            wrapper = RouterWrapper(hidden=True)
+            wrapper.include_router(_items_router())
+            app.include_router(wrapper.base)
+        flatten_included_routers(app)
+
+        assert app.openapi()["paths"] == {}
+        assert TestClient(app).get("/items").json() == {"value": "real"}
+
+    def test_keeps_include_default_response_class(self) -> None:
+        app = FastAPI()
+        app.include_router(_items_router(), default_response_class=MarkedJSONResponse)
+        flatten_included_routers(app)
+
+        response = TestClient(app).get("/items")
+
+        assert response.headers.get("x-response-class") == "marked"
+
+    def test_keeps_include_dependencies_and_overrides(self) -> None:
+        app = FastAPI()
+        app.include_router(_items_router(), dependencies=[Depends(_require_token)])
+        flatten_included_routers(app)
+        app.dependency_overrides[_get_value] = lambda: "overridden"
+        client = TestClient(app)
+
+        assert client.get("/items").status_code == 422
+        assert client.get("/items", headers={"x-token": "t"}).json() == {
+            "value": "overridden"
+        }
+
+        app.dependency_overrides[_require_token] = lambda: None
+
+        assert client.get("/items").status_code == 200
+
+    def test_keeps_router_wrapper_operation_id(self) -> None:
+        wrapper = RouterWrapper()
+        wrapper.include_router(_items_router(), prefix="/wrapped")
+        app = FastAPI()
+        app.include_router(wrapper.base)
+        flatten_included_routers(app)
+
+        operation = app.openapi()["paths"]["/wrapped/items"]["get"]
+
+        assert operation["operationId"] == "getWrappedItems"
+
+    @pytest.mark.skipif(
+        "strict_content_type" not in inspect.signature(APIRouter).parameters,
+        reason="FastAPI without strict_content_type",
+    )
+    def test_keeps_including_router_strict_content_type(self) -> None:
+        child = APIRouter()
+
+        @child.post("/echo")
+        def echo(payload: dict[str, int]) -> dict[str, int]:
+            return payload
+
+        lenient = APIRouter(strict_content_type=False)
+        lenient.include_router(child)
+        app = FastAPI()
+        app.include_router(lenient)
+        flatten_included_routers(app)
+
+        response = TestClient(app).post("/echo", content=b'{"a": 1}')
+
+        assert response.status_code == 200
+        assert response.json() == {"a": 1}
+
+    @pytest.mark.skipif(
+        not hasattr(APIRouter, "frontend"), reason="FastAPI without frontend routes"
+    )
+    def test_keeps_include_with_frontend_routes_wrapped(self, tmp_path: Path) -> None:
+        (tmp_path / "index.html").write_text("<p>front</p>")
+        child = _items_router()
+        child.frontend("/", directory=tmp_path)
+        app = FastAPI()
+        app.include_router(child, prefix="/app")
+        flatten_included_routers(app)
+        client = TestClient(app)
+
+        assert _has_included_router(app.router.routes)
+        assert client.get("/app/items").status_code == 200
+        assert "front" in client.get("/app/").text
+
+    def test_materialize_matches_flatten(self) -> None:
+        def build() -> FastAPI:
+            app = FastAPI()
+            app.include_router(
+                _items_router(), prefix="/api", dependencies=[Depends(_require_token)]
+            )
+            return app
+
+        materialized_app = build()
+        materialized = materialize_included_routes(
+            materialized_app.router.routes, materialized_app
+        )
+        flattened_app = build()
+        flatten_included_routers(flattened_app)
+
+        assert not _has_included_router(materialized)
+        assert [
+            _route_signature(r) for r in materialized if isinstance(r, APIRoute)
+        ] == [
+            _route_signature(r)
+            for r in flattened_app.router.routes
+            if isinstance(r, APIRoute)
+        ]
+        assert any(
+            isinstance(r, APIRoute)
+            and r.path == "/api/items"
+            and r.dependency_overrides_provider is materialized_app
+            for r in materialized
         )
 
 
