@@ -1,3 +1,4 @@
+import inspect
 import json
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Mapping, Sequence
@@ -13,7 +14,6 @@ from fastapi.routing import (
     APIRoute,
     APIWebSocketRoute,
     get_websocket_app,
-    request_response,
     websocket_session,
 )
 from openapi_spec_validator import validate
@@ -42,18 +42,162 @@ class RouterWrapperApp(Protocol):
     router_wrapper_class: type[RouterWrapperClassProtocol]
 
 
+_API_ROUTE_ACCEPTS_STRICT_CONTENT_TYPE = (
+    "strict_content_type" in inspect.signature(APIRoute.__init__).parameters
+)
+
+
+def _serving_router(container: Any) -> Any:
+    base = getattr(container, "base", None)
+    target = base if base is not None else container
+    return getattr(target, "router", target)
+
+
+def _is_included_router(route: BaseRoute) -> bool:
+    return getattr(route, "original_router", None) is not None
+
+
+def _has_low_priority_routes(router: Any) -> bool:
+    """Whether a router tree serves routes FastAPI only matches through includes.
+
+    ``APIRouter.frontend()`` registers low-priority routes that the parent
+    reaches through ``_IncludedRouter.effective_low_priority_routes()`` only, so
+    unwrapping such an include would stop serving them.
+    """
+    if getattr(router, "_low_priority_routes", None):
+        return True
+    return any(
+        _has_low_priority_routes(route.original_router)
+        for route in router.routes
+        if _is_included_router(route)
+    )
+
+
+def _materialize_api_route(
+    context: Any, dependency_overrides_provider: Any
+) -> APIRoute:
+    original_route = context.original_route
+    kwargs: dict[str, Any] = {}
+    if _API_ROUTE_ACCEPTS_STRICT_CONTENT_TYPE:
+        kwargs["strict_content_type"] = context.strict_content_type
+    route_class = cast("type[APIRoute]", type(original_route))
+    return route_class(
+        context.path,
+        context.endpoint,
+        response_model=context.response_model,
+        status_code=context.status_code,
+        tags=context.tags,
+        dependencies=context.dependencies,
+        summary=context.summary,
+        description=context.description,
+        response_description=context.response_description,
+        responses=context.responses,
+        deprecated=context.deprecated,
+        name=context.name,
+        methods=context.methods,
+        operation_id=context.operation_id,
+        response_model_include=context.response_model_include,
+        response_model_exclude=context.response_model_exclude,
+        response_model_by_alias=context.response_model_by_alias,
+        response_model_exclude_unset=context.response_model_exclude_unset,
+        response_model_exclude_defaults=context.response_model_exclude_defaults,
+        response_model_exclude_none=context.response_model_exclude_none,
+        include_in_schema=context.include_in_schema,
+        response_class=context.response_class,
+        dependency_overrides_provider=dependency_overrides_provider,
+        callbacks=context.callbacks,
+        openapi_extra=context.openapi_extra,
+        generate_unique_id_function=context.generate_unique_id_function,
+        **kwargs,
+    )
+
+
+def _rebind_websocket_route(
+    route: APIWebSocketRoute, dependency_overrides_provider: Any
+) -> APIWebSocketRoute:
+    route = copy(route)
+    route.app = websocket_session(
+        get_websocket_app(
+            dependant=route.dependant,
+            dependency_overrides_provider=dependency_overrides_provider,
+            embed_body_fields=route._embed_body_fields,
+        )
+    )
+    return route
+
+
+def _materialize_route_context(
+    context: Any, dependency_overrides_provider: Any
+) -> BaseRoute:
+    if isinstance(context.original_route, APIRoute):
+        return _materialize_api_route(context, dependency_overrides_provider)
+    route: BaseRoute = context.starlette_route
+    if isinstance(route, APIWebSocketRoute):
+        return _rebind_websocket_route(route, dependency_overrides_provider)
+    return route
+
+
+def materialize_included_routes(
+    routes: Sequence[BaseRoute], container: Any
+) -> list[BaseRoute]:
+    """Replace each lazily-mounted include of ``routes`` with its effective routes.
+
+    Since FastAPI 0.137, ``include_router`` appends a single ``_IncludedRouter``
+    whose include context (prefix, tags, dependencies, responses,
+    ``include_in_schema``, response class, unique id function, content-type
+    strictness, …) is only applied when FastAPI resolves a route. Every route
+    reachable through such an include, through nested includes too, is rebuilt
+    with that effective context, the way FastAPI <= 0.136 ``include_router``
+    copied routes eagerly, and bound to ``container``'s dependency override
+    provider.
+
+    Includes whose router tree holds ``APIRouter.frontend()`` routes are kept
+    as-is, since FastAPI only serves those through the include. Other routes are
+    returned unchanged, so on FastAPI <= 0.136 the result equals ``routes``.
+    Accepts a ``FastAPI`` app, an ``APIRouter`` or a ``RouterWrapper`` as
+    ``container``.
+    """
+    dependency_overrides_provider = getattr(
+        _serving_router(container), "dependency_overrides_provider", None
+    )
+    materialized: list[BaseRoute] = []
+    for route in routes:
+        if _is_included_router(route) and not _has_low_priority_routes(
+            cast("Any", route).original_router
+        ):
+            materialized.extend(
+                _materialize_route_context(context, dependency_overrides_provider)
+                for context in cast("Any", route).effective_route_contexts()
+            )
+        else:
+            materialized.append(route)
+    return materialized
+
+
 def collect_app_routes(container: Any) -> list[BaseRoute]:
     """Flatten every route reachable from an app or router.
 
-    Descends into included routers (including the lazily-mounted routers used by
-    recent FastAPI releases) and mounts so callers get the leaf routes
-    regardless of how they were included.
+    Lazily-mounted includes contribute their effective routes, rebuilt as
+    ``materialize_included_routes`` does, so the result carries the path, tags,
+    responses and schema visibility the app actually serves; mounts are
+    descended into, so callers get the leaf routes regardless of how they were
+    included.
     """
+    return _collect_routes(getattr(container, "routes", []))
+
+
+def _collect_routes(routes: Sequence[BaseRoute]) -> list[BaseRoute]:
     collected: list[BaseRoute] = []
-    for route in getattr(container, "routes", []):
-        original_router = getattr(route, "original_router", None)
-        if original_router is not None:
-            collected.extend(collect_app_routes(original_router))
+    for route in routes:
+        if _is_included_router(route):
+            collected.extend(
+                _collect_routes(
+                    [
+                        _materialize_route_context(context, None)
+                        for context in cast("Any", route).effective_route_contexts()
+                    ]
+                )
+            )
         elif isinstance(route, APIRoute):
             collected.append(route)
         elif getattr(route, "routes", None) is not None:
@@ -63,97 +207,34 @@ def collect_app_routes(container: Any) -> list[BaseRoute]:
     return collected
 
 
-def _include_is_transparent(route: BaseRoute) -> bool:
-    """Whether an ``_IncludedRouter`` mounts its child routes unchanged.
-
-    FastAPI >= 0.139 stores the ``include_router`` arguments (prefix, tags,
-    dependencies, …) on ``route.include_context`` and applies them lazily. When
-    none of them alter the child routes, the child's own route objects already
-    are the effective serving routes and can be spliced in as-is. Any transform
-    means the effective route differs from the stored child route, so the
-    wrapper must stay in place to keep serving correctly.
-    """
-    context = getattr(route, "include_context", None)
-    if context is None:
-        return True
-    return not (
-        getattr(context, "prefix", "")
-        or getattr(context, "tags", None)
-        or getattr(context, "dependencies", None)
-        or getattr(context, "responses", None)
-        or getattr(context, "callbacks", None)
-        or getattr(context, "deprecated", None)
-    )
-
-
-def _reparent_route(route: BaseRoute, dependency_overrides_provider: Any) -> BaseRoute:
-    """Copy a flattened route and bind its handler to its serving container."""
-    if isinstance(route, APIRoute):
-        route = copy(route)
-        route.dependency_overrides_provider = dependency_overrides_provider
-        route.app = request_response(route.get_route_handler())
-    elif isinstance(route, APIWebSocketRoute):
-        route = copy(route)
-        route.app = websocket_session(
-            get_websocket_app(
-                dependant=route.dependant,
-                dependency_overrides_provider=dependency_overrides_provider,
-                embed_body_fields=route._embed_body_fields,
-            )
-        )
-    return route
-
-
-def _flatten_included_routes(
-    routes: Sequence[BaseRoute], dependency_overrides_provider: Any
-) -> list[BaseRoute]:
-    flattened: list[BaseRoute] = []
-    for route in routes:
-        original_router = getattr(route, "original_router", None)
-        if original_router is not None and _include_is_transparent(route):
-            child_routes = _flatten_included_routes(
-                original_router.routes, dependency_overrides_provider
-            )
-            flattened.extend(
-                _reparent_route(child_route, dependency_overrides_provider)
-                for child_route in child_routes
-            )
-        else:
-            flattened.append(route)
-    return flattened
-
-
 def flatten_included_routers(container: Any) -> None:
     """Rewrite a serving router's ``routes`` so no ``_IncludedRouter`` remains.
 
-    Since FastAPI 0.139 each ``include_router`` call appends a single opaque
-    ``_IncludedRouter`` to the parent ``routes`` instead of flattening the
-    child's routes. Starlette matches every ``routes`` entry on each request, and
+    Since FastAPI 0.137 each ``include_router`` call appends a single opaque
+    ``_IncludedRouter`` to the parent ``routes`` instead of copying the child's
+    routes. Starlette matches every ``routes`` entry on each request, and
     ``_IncludedRouter.matches()`` materialises and retains the effective
     dependency tree of every child route on first match — inflating RSS by
     hundreds of MB for a large composed app and leading to OOM under load.
 
-    Replacing each transparent ``_IncludedRouter`` in place with the real leaf
-    routes it wraps restores the flat routing table FastAPI <= 0.138 built
-    eagerly, so Starlette never calls ``_IncludedRouter.matches()`` on the hot
-    path. Only entries carrying ``original_router`` whose ``include_context``
-    applies no transform are flattened; ``Mount``/sub-apps, redirect routes and
-    prefixed/dependency-carrying includes are kept as-is. Flattened HTTP and
-    WebSocket routes are rebound to the serving container's dependency override
-    provider. A no-op on FastAPI 0.115→0.138, where the table is already flat.
+    Replacing each ``_IncludedRouter`` in place with its effective routes (see
+    ``materialize_included_routes``) restores the flat routing table FastAPI
+    <= 0.136 built eagerly, so Starlette never calls
+    ``_IncludedRouter.matches()`` on the hot path, while keeping every include
+    setting: prefix, tags, dependencies, responses, ``include_in_schema``,
+    response class, unique id function and content-type strictness. Flattened
+    HTTP and WebSocket routes are bound to the serving container's dependency
+    override provider. A no-op on FastAPI 0.115→0.136, where the table is
+    already flat.
 
     Call it once after all ``include_router`` calls, before serving. Accepts a
     ``FastAPI`` app, an ``APIRouter`` or a ``RouterWrapper``.
     """
-    base = getattr(container, "base", None)
-    target = base if base is not None else container
-    router = getattr(target, "router", target)
+    router = _serving_router(container)
     routes = getattr(router, "routes", None)
     if routes is None:
         return
-    routes[:] = _flatten_included_routes(
-        routes, getattr(router, "dependency_overrides_provider", None)
-    )
+    routes[:] = materialize_included_routes(routes, container)
     mark_changed = getattr(router, "_mark_routes_changed", None)
     if callable(mark_changed):
         mark_changed()

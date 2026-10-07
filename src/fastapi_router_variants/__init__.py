@@ -28,6 +28,7 @@ from fastapi_router_variants.openapi import (
     collect_app_routes,
     flatten_included_routers,
     get_openapi_static,
+    materialize_included_routes,
     openapi_provider_factory,
 )
 from fastapi_router_variants.specs import (
@@ -127,6 +128,7 @@ __all__ = [
     "flatten_included_routers",
     "get_openapi_static",
     "load_markdown",
+    "materialize_included_routes",
     "normalize_version_spec",
     "openapi_provider_factory",
     "prefixed_routes",
