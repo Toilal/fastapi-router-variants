@@ -2,6 +2,17 @@
 
 <!-- version list -->
 
+## v0.2.3 (2026-10-07)
+
+### Bug Fixes
+
+- **openapi**: Document effective include routes from FastAPI 0.137
+  ([`98eb2e6`](https://github.com/Toilal/fastapi-router-variants/commit/98eb2e61a551b3bf1a8d4b2020202ba4b90c502a))
+
+- **openapi**: Rebuild included routes from their effective context
+  ([`964c508`](https://github.com/Toilal/fastapi-router-variants/commit/964c5086f9d3798b9892133c2aaee256e0c44f69))
+
+
 ## v0.2.2 (2026-07-25)
 
 ### Bug Fixes

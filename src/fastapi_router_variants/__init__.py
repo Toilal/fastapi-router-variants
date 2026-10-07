@@ -72,7 +72,7 @@ from fastapi_router_variants.versioning import (
     versioned_routes,
 )
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 __all__ = [
     "And",
