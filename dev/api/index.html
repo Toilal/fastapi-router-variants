@@ -930,6 +930,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#materialize_included_routesroutes-container-listbaseroute" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>materialize_included_routes(routes, container) -&gt; list[BaseRoute]</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#flatten_included_routerscontainer-none" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1536,6 +1547,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#materialize_included_routesroutes-container-listbaseroute" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>materialize_included_routes(routes, container) -&gt; list[BaseRoute]</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#flatten_included_routerscontainer-none" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1822,15 +1844,30 @@ and <code>get_version_range()</code>.</p>
 specs, otherwise an <code>AppOpenapiProvider</code>.</p>
 <h3 id="collect_app_routescontainer-listbaseroute"><code>collect_app_routes(container) -&gt; list[BaseRoute]</code><a class="headerlink" href="#collect_app_routescontainer-listbaseroute" title="Permanent link">&para;</a></h3>
 <p>Flatten every leaf route reachable from an app or router (descending into
-included routers and mounts).</p>
+included routers and mounts). Routes reached through a lazily-mounted include
+are the effective ones built by <code>materialize_included_routes</code>, so the generated
+OpenAPI documents the path, tags, responses and schema visibility the app
+actually serves.</p>
+<h3 id="materialize_included_routesroutes-container-listbaseroute"><code>materialize_included_routes(routes, container) -&gt; list[BaseRoute]</code><a class="headerlink" href="#materialize_included_routesroutes-container-listbaseroute" title="Permanent link">&para;</a></h3>
+<p>Return <code>routes</code> with each lazily-mounted <code>_IncludedRouter</code> (FastAPI &gt;= 0.137)
+replaced by its effective routes: every route reachable through the include,
+nested includes included, is rebuilt with the settings FastAPI applies at
+resolution time — prefix, tags, dependencies, responses, <code>include_in_schema</code>,
+response class, unique id function and content-type strictness — the way
+<code>include_router</code> copied routes up to FastAPI 0.136. HTTP and WebSocket routes
+are bound to the dependency override provider of <code>container</code> (a <code>FastAPI</code> app,
+an <code>APIRouter</code> or a <code>RouterWrapper</code>). Includes whose router tree holds
+<code>APIRouter.frontend()</code> routes are kept as-is, since FastAPI only serves those
+through the include. The list is returned unchanged on FastAPI 0.115→0.136.</p>
 <h3 id="flatten_included_routerscontainer-none"><code>flatten_included_routers(container) -&gt; None</code><a class="headerlink" href="#flatten_included_routerscontainer-none" title="Permanent link">&para;</a></h3>
 <p>Rewrite a serving app/router (or <code>RouterWrapper</code>) in place so no lazily-mounted
-<code>_IncludedRouter</code> remains: each transparent include is replaced by the real leaf
-routes it wraps. Call it once after all <code>include_router</code> calls to avoid the
-per-request memory bloat FastAPI &gt;= 0.139 incurs on composed apps. Prefixed or
-dependency-carrying includes, mounts and redirect routes are left untouched.
-Flattened HTTP and WebSocket routes are rebound to the serving app so
-<code>app.dependency_overrides</code> keeps working. A no-op on FastAPI 0.115→0.138.</p>
+<code>_IncludedRouter</code> remains: its <code>routes</code> become
+<code>materialize_included_routes(routes, container)</code>. Call it once after all
+<code>include_router</code> calls to avoid the per-request memory bloat FastAPI &gt;= 0.137
+incurs on composed apps. Every include setting keeps applying, and flattened
+HTTP and WebSocket routes are bound to the serving app so
+<code>app.dependency_overrides</code> keeps working. Mounts, redirect routes and includes
+serving frontend routes are left untouched. A no-op on FastAPI 0.115→0.136.</p>
 <h3 id="get_openapi_staticapp-title-routes-dict"><code>get_openapi_static(app, title, routes) -&gt; dict</code><a class="headerlink" href="#get_openapi_staticapp-title-routes-dict" title="Permanent link">&para;</a></h3>
 <p>Build an OpenAPI 3.1.0 document for a fixed set of routes, inheriting the app's
 metadata.</p>
