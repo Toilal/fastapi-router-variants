@@ -78,11 +78,11 @@ variant-expansion parameters (`version`, `prefix`, `deployment`, `public`, …).
 The underlying `APIRouter` is available as `router.base` and is what you pass to
 `app.include_router(...)`.
 
-On FastAPI >= 0.139 each `include_router` call leaves an opaque lazily-mounted
+On FastAPI >= 0.137 each `include_router` call leaves an opaque lazily-mounted
 router in the app's routing table; under load Starlette makes those wrappers
 retain the effective route tree, inflating memory. Once composition is done,
-call `flatten_included_routers(app)` to splice the real routes back into place
-and avoid the regression (a no-op on older FastAPI):
+call `flatten_included_routers(app)` to splice the effective routes back into
+place and avoid the regression (a no-op on older FastAPI):
 
 ```python
 from fastapi_router_variants import flatten_included_routers
@@ -92,8 +92,10 @@ app.include_router(router.base)
 flatten_included_routers(app)
 ```
 
-Flattened HTTP and WebSocket routes remain bound to `app`, so dependency
-overrides configured through `app.dependency_overrides` continue to apply.
+Flattened routes keep every include setting (prefix, tags, dependencies,
+responses, `include_in_schema`, response class, …), and HTTP and WebSocket
+routes remain bound to `app`, so dependency overrides configured through
+`app.dependency_overrides` continue to apply.
 
 ## Where to go next
 

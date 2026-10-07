@@ -269,17 +269,34 @@ specs, otherwise an `AppOpenapiProvider`.
 ### `collect_app_routes(container) -> list[BaseRoute]`
 
 Flatten every leaf route reachable from an app or router (descending into
-included routers and mounts).
+included routers and mounts). Routes reached through a lazily-mounted include
+are the effective ones built by `materialize_included_routes`, so the generated
+OpenAPI documents the path, tags, responses and schema visibility the app
+actually serves.
+
+### `materialize_included_routes(routes, container) -> list[BaseRoute]`
+
+Return `routes` with each lazily-mounted `_IncludedRouter` (FastAPI >= 0.137)
+replaced by its effective routes: every route reachable through the include,
+nested includes included, is rebuilt with the settings FastAPI applies at
+resolution time — prefix, tags, dependencies, responses, `include_in_schema`,
+response class, unique id function and content-type strictness — the way
+`include_router` copied routes up to FastAPI 0.136. HTTP and WebSocket routes
+are bound to the dependency override provider of `container` (a `FastAPI` app,
+an `APIRouter` or a `RouterWrapper`). Includes whose router tree holds
+`APIRouter.frontend()` routes are kept as-is, since FastAPI only serves those
+through the include. The list is returned unchanged on FastAPI 0.115→0.136.
 
 ### `flatten_included_routers(container) -> None`
 
 Rewrite a serving app/router (or `RouterWrapper`) in place so no lazily-mounted
-`_IncludedRouter` remains: each transparent include is replaced by the real leaf
-routes it wraps. Call it once after all `include_router` calls to avoid the
-per-request memory bloat FastAPI >= 0.139 incurs on composed apps. Prefixed or
-dependency-carrying includes, mounts and redirect routes are left untouched.
-Flattened HTTP and WebSocket routes are rebound to the serving app so
-`app.dependency_overrides` keeps working. A no-op on FastAPI 0.115→0.138.
+`_IncludedRouter` remains: its `routes` become
+`materialize_included_routes(routes, container)`. Call it once after all
+`include_router` calls to avoid the per-request memory bloat FastAPI >= 0.137
+incurs on composed apps. Every include setting keeps applying, and flattened
+HTTP and WebSocket routes are bound to the serving app so
+`app.dependency_overrides` keeps working. Mounts, redirect routes and includes
+serving frontend routes are left untouched. A no-op on FastAPI 0.115→0.136.
 
 ### `get_openapi_static(app, title, routes) -> dict`
 
