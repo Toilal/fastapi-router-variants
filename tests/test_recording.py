@@ -3,6 +3,8 @@ from dataclasses import dataclass
 import pytest
 
 from fastapi_router_variants import (
+    Route,
+    RouteFlavor,
     RouterDefaults,
     RouteRecorder,
     RouterWrapper,
@@ -129,6 +131,26 @@ class TestRecording:
         record = recorder.records[0]
         assert record.hidden is True
         assert record.deployment == "metrics"
+
+    def test_records_each_flavor_deployment(self) -> None:
+        @dataclass(frozen=True)
+        class DeployDefaults(RouterDefaults):
+            version = False
+            deployment = "prod"
+
+        RouterWrapper.defaults = DeployDefaults()
+        router = RouterWrapper()
+        recorder = CollectingRecorder()
+
+        with RouterWrapper.recording(recorder):
+
+            @router.get(Route("/x") + RouteFlavor(prefix="/other", deployment="other"))
+            def impl() -> None: ...
+
+        assert {r.path: r.deployment for r in recorder.records} == {
+            "/x": "prod",
+            "/other/x": "other",
+        }
 
     def test_recording_restores_previous_state(self) -> None:
         router = RouterWrapper(version=False)
