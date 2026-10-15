@@ -131,4 +131,5 @@ prefix expands to several segments, one route variant is generated per segment.
 boolean). It does not change the generated path; it is recorded as the
 `x-deployment` OpenAPI extension and can be matched later by a
 [routing spec](specs.md). A deployment set on the decorator overrides the router
-value, which overrides the defaults value.
+value, which overrides the one each `Route` or `RouteFlavor` declares. The
+defaults value only applies to the variants left without a deployment.

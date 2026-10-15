@@ -42,7 +42,7 @@ The full set of default fields (extends `VersioningDefaultsProtocol`):
 - `public: RoutingSpec | None` — spec identifying public routes.
 - `version_default: int` — version used on unversioned doc URLs (default `1`).
 - `requires: list | None` — dependencies added to every route.
-- `deployment: str | None` — default deployment declared on every route.
+- `deployment: str | None` — default deployment of the routes declaring none.
 - `operation_id_settings: RouterOperationIdSettings` — OpenAPI operation-id
   generation settings.
 - `autodoc_http_errors: bool` — enable automatic OpenAPI documentation of raised
