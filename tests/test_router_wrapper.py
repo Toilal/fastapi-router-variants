@@ -14,6 +14,7 @@ from starlette.testclient import TestClient
 
 from fastapi_router_variants import (
     Route,
+    RouteFlavor,
     RouterDefaults,
     RouterWrapper,
     RouterWrapperError,
@@ -751,6 +752,60 @@ class TestDefaultsDeployment:
         route = next(r for r in router.base.routes if isinstance(r, APIRoute))
         assert route.openapi_extra is not None
         assert route.openapi_extra.get("x-deployment") == "prod"
+
+    @pytest.fixture
+    def prod_defaults(self) -> None:
+        @dataclass(frozen=True)
+        class DeployDefaults(RouterDefaults):
+            version = False
+            deployment = "prod"
+
+        RouterWrapper.defaults = DeployDefaults()
+
+    @staticmethod
+    def _deployments(router: RouterWrapper) -> dict[str, Any]:
+        return {
+            r.path: (r.openapi_extra or {}).get("x-deployment")
+            for r in router.base.routes
+            if isinstance(r, APIRoute)
+        }
+
+    def test_a_flavor_keeps_its_own_deployment(self, prod_defaults: None) -> None:
+        router = RouterWrapper()
+
+        @router.get(Route("/thing") + RouteFlavor(prefix="/other", deployment="other"))
+        def thing() -> None: ...
+
+        assert self._deployments(router) == {
+            "/thing": "prod",
+            "/other/thing": "other",
+        }
+
+    def test_a_router_deployment_wins_over_the_flavor_one(
+        self, prod_defaults: None
+    ) -> None:
+        router = RouterWrapper(deployment="router")
+
+        @router.get(Route("/thing") + RouteFlavor(prefix="/other", deployment="other"))
+        def thing() -> None: ...
+
+        assert self._deployments(router) == {
+            "/thing": "router",
+            "/other/thing": "router",
+        }
+
+    def test_a_route_deployment_wins_over_the_flavor_one(
+        self, prod_defaults: None
+    ) -> None:
+        router = RouterWrapper()
+
+        @router.get(
+            Route("/thing") + RouteFlavor(prefix="/other", deployment="other"),
+            deployment="route",
+        )
+        def thing() -> None: ...
+
+        assert set(self._deployments(router).values()) == {"route"}
 
 
 class MyError(Exception):

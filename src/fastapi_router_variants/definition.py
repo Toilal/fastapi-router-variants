@@ -2,7 +2,7 @@ import inspect
 from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 from copy import deepcopy
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import Enum
 from functools import wraps
 from itertools import chain
@@ -1002,8 +1002,6 @@ class RouterWrapper:
             public = self.public
         if deployment is None:
             deployment = self.deployment
-        if deployment is None:
-            deployment = self.defaults.deployment
 
         if version is None and self.version is None and self.defaults.version is True:
             raise RouterWrapperError("version must be defined on route or router")
@@ -1031,6 +1029,18 @@ class RouterWrapper:
             version,
             deployment,
         )
+
+        # The defaults only fill the variants declaring no deployment: applied
+        # before ``variants_routes``, they would override each flavor's own.
+        if self.defaults.deployment is not None:
+            route_paths = tuple(
+                (
+                    replace(route_path, deployment=self.defaults.deployment)
+                    if route_path.deployment is None
+                    else route_path
+                )
+                for route_path in route_paths
+            )
 
         if len(route_paths) == 1:
             route_path = route_paths[0]
