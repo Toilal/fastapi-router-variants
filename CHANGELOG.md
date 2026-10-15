@@ -2,6 +2,17 @@
 
 <!-- version list -->
 
+## v0.2.4 (2026-10-15)
+
+### Bug Fixes
+
+- **deployment**: Document the flavor deployment precedence
+  ([`4b5a61f`](https://github.com/Toilal/fastapi-router-variants/commit/4b5a61fa833d14baee9b569b153b4d8219698739))
+
+- **deployment**: Keep each route flavor's own deployment
+  ([`26eca97`](https://github.com/Toilal/fastapi-router-variants/commit/26eca978b7b3fc8a75d52e5987c9aa62157e8e21))
+
+
 ## v0.2.3 (2026-10-07)
 
 ### Bug Fixes
